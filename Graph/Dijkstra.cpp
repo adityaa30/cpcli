@@ -1,9 +1,14 @@
 #include <bits/stdc++.h>
 #include <limits.h>
-#define fio ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
-#define li long long int
+#define fio                           \
+    ios_base::sync_with_stdio(false); \
+    cin.tie(NULL);                    \
+    cout.tie(NULL);
+#define li int
 #define mod 1000000007
 using namespace std;
+
+li graph[3001][3001];
 
 li minDistance(li dist[], bool sptSet[], li V)
 {
@@ -15,15 +20,18 @@ li minDistance(li dist[], bool sptSet[], li V)
     return min_index;
 }
 
-li printSolution(li dist[], li V)
+void printSolution(li dist[], li V)
 {
-
-    cout << "Vertex\tDistance from Source" << endl;
-    for (li i = 0; i < V; i++)
-        cout << i << '\t' << dist[i] << endl;
+    // Prints the distance of all the vertices from the given source vertex
+    printf("Vertex\tDistance\n");
+    for (li i = 0; i < V; ++i)
+        if (dist[i] == INT_MAX)
+            printf("%d\t=>\tINF\n", i);
+        else
+            printf("%d\t=>\t%d\n", i, dist[i]);
 }
 
-void dijkstra(li graph[][100000], li src, li V)
+void dijkstra(li graph[][3001], li src, li V)
 {
 
     li dist[V];
@@ -51,25 +59,30 @@ int main()
 {
     fio;
 
+    // n -> Number of vertices
+    // v -> Number of edges
+
     li n, m, x, y, wt, s;
-    cin >> n >> m;
-    li graph[n][100000];
+    scanf("%d %d", &n, &m);
 
     for (li i = 0; i < n; ++i)
-    {
         for (li j = 0; j < n; ++j)
-        {
             graph[i][j] = 0;
-        }
-    }
 
     for (li i = 0; i < m; ++i)
     {
-        cin >> x >> y >> wt;
-        graph[x - 1][y - 1] = wt;
-        graph[y - 1][x - 1] = wt;
+        scanf("%d %d %d", &x, &y, &wt);
+
+        // If more than 2 edges are present between a pair of vertices,
+        // then take the edge with less weight.
+        if (graph[x - 1][y - 1] == 0 || graph[x - 1][y - 1] > wt)
+        {
+            graph[x - 1][y - 1] = wt;
+            graph[y - 1][x - 1] = wt;
+        }
     }
-    cin >> s;
+
+    scanf("%d", &s);
     dijkstra(graph, s - 1, n);
 
     return 0;

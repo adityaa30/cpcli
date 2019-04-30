@@ -6,4 +6,6 @@
 program
 temp.cpp
 
+*.txt
+
 Introduction to Algorithms - 3rd Edition.pdf

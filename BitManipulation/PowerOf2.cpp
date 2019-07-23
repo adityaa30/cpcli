@@ -3,9 +3,7 @@
 using namespace std;
 
 bool IsPowerOf2(li n) {
-    if(n == 0) return true;
-    if(n & (n - 1)) return true;
-    return false;
+    return n && !(n & (n - 1));
 }
 
 // To calculate the total number of bits in GCC compiler use: __builtin_popcount()

@@ -78,6 +78,15 @@ void LevelOrderTraversal(Node *node) {
     cout << endl;
 }
 
+void GreaterKeys(Node *node, li& currentSum) {
+    if(node == NULL) return;
+    GreaterKeys(node->right, currentSum);
+    node->data = node->data + currentSum;
+    currentSum = node->data;
+    GreaterKeys(node->left, currentSum);
+}
+
+
 
 int main() {
     Node *root = new Node(50, NULL);
@@ -89,11 +98,16 @@ int main() {
     AddNode(root, 80);
 
     LevelOrderTraversal(root);
-    cout << "LCA of 60 & 70: " << LCA(root, 60, 70)->data << endl;
-    cout << "Minimum: " << FindMiniumumValue(root)->data << endl;
-    cout << "Inorder Successor of 60: " << InorderSuccessor(root->right->left)->data << endl;
-    li sum = 0;
-    AddGreatorValues(root, sum);
+    li temp = 0;
+    GreaterKeys(root, temp);
     LevelOrderTraversal(root);
+    // LevelOrderTraversal(root);
+    // cout << "LCA of 60 & 70: " << LCA(root, 60, 70)->data << endl;
+    // cout << "Minimum: " << FindMiniumumValue(root)->data << endl;
+    // cout << "Inorder Successor of 60: " << InorderSuccessor(root->right->left)->data << endl;
+    // li sum = 0;
+    // AddGreatorValues(root, sum);
+    // LevelOrderTraversal(root); cout << endl;
+
     return 0;
 }

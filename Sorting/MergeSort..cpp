@@ -1,57 +1,42 @@
-#include <bits/stdc++.h>
-#define ll long long int
-using namespace std;
+#include <iostream>
 
-void merge(int arr[], int l, int m, int r) {
-    int size1 = (m + 1) - l;
-    int size2 = (r + 1) - (m + 1);
-
-    int L[size1];
-    int R[size2];
-
-    for (int i = 0; i < size1; ++i)
-        L[i] = arr[l + i];
-
-    for (int j = 0; j < size2; ++j)
-        R[j] = arr[m + 1 + j];
-
-    int i = 0, j = 0, k = l;
-    while (i < size1 && j < size2)
-        if (L[i] < R[j])
-            arr[k++] = L[i++];
-        else
-            arr[k++] = R[j++];
-
-    while (i < size1)
-        arr[k++] = L[i++];
-
-    while (j < size2)
-        arr[k++] = L[j++];
-
+template <typename T>
+void Swap(T x, T y) {
+    T temp = x;
+    x = y;
+    y = temp;
 }
 
-void mergeSort(int arr[], int l, int r) {
-    if (l < r) {
+void Merge(int *arr, int n, int l, int m, int r) {
+    int Size1 = m - l + 1, Size2 = r - m;
+
+    int Arr1[Size1], Arr2[Size2];
+    for(int i = 0; i < Size1; ++i) Arr1[i] = arr[i + l];
+    for(int i = 0; i < Size2; ++i) Arr2[i] = arr[i + m + 1];
+
+    int i = 0, j = 0, k = l;
+    while(i < Size1 && j < Size2) {
+        if(Arr1[i] > Arr2[j]) arr[k++] = Arr2[j++];
+        else arr[k++] = Arr1[i++];
+    }
+
+    while(i < Size1) arr[k++] = Arr1[i++];
+    while(j < Size2) arr[k++] = Arr2[i++];
+}
+
+void MergeSort(int *arr, int n, int l, int r) {
+    if(l < r) {
         int m = l + (r - l) / 2;
-        mergeSort(arr, l, m);
-        mergeSort(arr, m + 1, r);
-        merge(arr, l, m, r);
+        MergeSort(arr, n, l, m);
+        MergeSort(arr, n, m + 1, r);
+        Merge(arr, n, l, m, r);
     }
 }
 
-void printArray(int arr[], int n) {
-    for (int i = 0; i < n; ++i)
-        cout << arr[i] << ' ';
-    cout << endl;
-}
-
 int main() {
-    int n;
-    cin >> n;
-    int arr[n];
-    for (int i = 0; i < n; ++i)
-        cin >> arr[i];
-    mergeSort(arr, 0, n - 1);
-    printArray(arr, n);
+    int arr[4] = {10, 5, 6, 5}, n = 4;
+    MergeSort(arr, 4, 0, 4 - 1);
+    for(int i = 0; i < n; ++i) printf("%d ", *(arr + i));
+    printf("\n");
     return 0;
 }

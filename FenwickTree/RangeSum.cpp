@@ -5,11 +5,10 @@ using namespace std;
 
 struct FenwickTree {
   li size;
-  li *table;
+  vector<li> table;
 
   FenwickTree(li size) {
-    this->table = new li[size + 1];
-    memset(this->table, 0, sizeof(this->table));
+    this->table = vector<li>(size + 1, 0);
     this->size = size;
   }
 
@@ -40,29 +39,24 @@ int main() {
   ios_base::sync_with_stdio(false);
   cin.tie(NULL);
   cout.tie(NULL);
-  
+
   li n, q, c, a, b, temp;
-  cin >> n;
+  n = 5;
   FenwickTree ft(n);
 
   for (li i = 1; i <= n; ++i) {
-    cin >> temp;
-    ft.Update(i, temp);
+    ft.Update(i, 1);
   }
 
-  // Show the fenwick table
-  for (li i = 1; i <= n; ++i)
-    cout << ft[i] << ' ';
+  for (li i = 0; i <= n; ++i) {
+    cout << ft.RangeSum(i, i) << ' ';
+  }
   cout << '\n';
-
-  cin >> q;
-  while (q--) {
-    cin >> c >> a >> b;
-    if (c == 1) // Update
-      ft.Update(a, b);
-    else
-      cout << ft.RangeSum(a, b) << '\n';
+  ft.Update(3, 20);
+  ft.Update(1, -20);
+  for (li i = 0; i <= n; ++i) {
+    cout << ft.RangeSum(i, i) << ' ';
   }
-
+  cout << '\n';
   return 0;
 }

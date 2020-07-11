@@ -6,9 +6,36 @@ set -e
 if [ $# != 3 ]
 then
     echo "Usage: ./check.sh <Program File> <Correct Program File> <Generator File>"
+    echo "
+✳️ Use this script with
+    1) Original Algorithm Program C++ file
+    2) Safe & Working Algorithm Program C++ file (Brute Force 🤔)
+    3) Program which will be used to generate test case - Generator
+
+✳️ Script will generate at most 500 test cases and stop whenever output
+of (1) and (2) differ showing both the input & outputs.
+"
+
     GCC_VERSION=`g++ --version | head -n1`
     echo "NOTE: All files should compile using ${GCC_VERSION}"
+    exit 0
 fi
+
+if [ ! -f "$1" ]; then
+    echo "Program File '$1' does not exist."
+    exit 0
+fi
+
+if [ ! -f "$2" ]; then
+    echo "Correct Program File '$2' does not exist."
+    exit 0
+fi
+
+if [ ! -f "$3" ]; then
+    echo "Generator File '$3' does not exist."
+    exit 0
+fi
+
 
 HOME_DIR=`pwd`
 

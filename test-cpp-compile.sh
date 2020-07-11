@@ -10,7 +10,9 @@ echo "Checking if all *.cpp files compiles successfully 🙃"
 
 for path in $CPP_FILES
 do
-    g++ $path -o $TEST_PROG_FILE
+    # To support programs using pthread we add flag
+    # TODO: Use pthread flag only when required
+    g++ $path -o $TEST_PROG_FILE -pthread
 
     if [ -f $TEST_PROG_FILE ];
     then

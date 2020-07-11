@@ -33,7 +33,7 @@ void *writer(void *arg) {
     li f = (li)arg;
     sem_wait(&writeblock);
     dataa++;
-    cout << "Data written by writer " << f << " is: " << dataa << endl; 
+    cout << "Data written by writer " << f << " is: " << dataa << endl;
     // sleep(1);
     sem_post(&writeblock);
 }

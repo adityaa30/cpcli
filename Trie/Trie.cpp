@@ -65,3 +65,5 @@ public:
   // Helper function -- strategies related to dfs
   void Dfs(Trie::Node &current, int depth);
 };
+
+int32_t main() { return 0; }

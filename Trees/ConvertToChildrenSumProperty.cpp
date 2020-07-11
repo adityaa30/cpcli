@@ -29,7 +29,7 @@ void ConvertToChildrenSum(Node *node) {
     ConvertToChildrenSum(node->right);
     // cout << node->data << ' ';
 
-    li childrenSum = (node->left != NULL ? node->left->data : 0) 
+    li childrenSum = (node->left != NULL ? node->left->data : 0)
             + (node->right != NULL ? node->right->data : 0);
     li diff = childrenSum - node->data;
     if (diff >= 0) node->data += diff;
@@ -59,19 +59,15 @@ void LevelOrderTraversal(Node *node) {
 }
 
 int main() {
-    Node *root = new Node(1);  
-    root->left = new Node(2);  
-    root->right = new Node(3);  
-    root->left->left = new Node(4);  
-    root->right->right = new Node(5);  
-    root->right->left = new Node(6);  
-    root->left->left->left = new Node(7);  
-    
-    LevelOrderTraversal(root);
-    // ConvertToChildrenSum(root);
-    // LevelOrderTraversal(root);
+    Node *root = new Node(1);
+    root->left = new Node(2);
+    root->right = new Node(3);
+    root->left->left = new Node(4);
+    root->right->right = new Node(5);
+    root->right->left = new Node(6);
+    root->left->left->left = new Node(7);
 
-    li nu = 0;
-    GreaterKeys(root, nu);
+    LevelOrderTraversal(root);
+    ConvertToChildrenSum(root);
     LevelOrderTraversal(root);
 }

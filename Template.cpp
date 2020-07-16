@@ -18,7 +18,7 @@ const int MOD = 1000000007;
 int PosX[] = {0, 1, 0, -1, 1, 1, -1, -1};
 int PosY[] = {1, 0, -1, 0, 1, -1, 1, -1};
 
-void Solve() {
+void Solve(int test) {
   // Start here
 }
 
@@ -31,7 +31,7 @@ int32_t main() {
   int t = 1;
   cin >> t;
   for (int test = 1; test <= t; ++test) {
-    Solve();
+    Solve(test);
   }
 
   return 0;

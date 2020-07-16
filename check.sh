@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e
 
 # Check if arguments passed are OK
 if [ $# != 3 ]
@@ -50,6 +50,7 @@ removeGeneratedFiles() {
     rm -rf $TEST_DIR
 
     echo "Deleted folder $TEST_DIR 📀"
+    exit 0
 }
 
 # Set a trap so that we make sure generated files are always deleted
@@ -81,4 +82,4 @@ do
   echo "$i ✅"
 done
 
-removeGeneratedFiles()
+removeGeneratedFiles

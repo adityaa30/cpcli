@@ -1,85 +1,90 @@
-#include <bits/stdc++.h> 
-using namespace std; 
-  
-// Class to represent a graph 
-class Graph 
-{ 
-    int V;    // No. of vertices' 
-  
-    // Pointer to an array containing adjacency listsList 
-    list<int> *adj; 
-  
-    // A function used by topologicalSort 
-    void topologicalSortUtil(int v, bool visited[], stack<int> &Stack); 
-public: 
-    Graph(int V);   // Constructor 
-  
-     // function to add an edge to graph 
-    void addEdge(int v, int w); 
-  
-    // prints a Topological Sort of the complete graph 
-    void topologicalSort(); 
-}; 
-  
-Graph::Graph(int V) { 
-    this->V = V; 
-    adj = new list<int>[V]; 
-} 
-  
-void Graph::addEdge(int v, int w) { 
-    adj[v].push_back(w); // Add w to v’s list. 
-} 
-  
-// A recursive function used by topologicalSort 
-void Graph::topologicalSortUtil(int v, bool visited[], stack<int> &Stack) { 
-    // Mark the current node as visited. 
-    visited[v] = true; 
-  
-    // Recur for all the vertices adjacent to this vertex 
-    list<int>::iterator i; 
-    for (i = adj[v].begin(); i != adj[v].end(); ++i) 
-        if (!visited[*i]) 
-            topologicalSortUtil(*i, visited, Stack); 
-  
-    // Push current vertex to stack which stores result 
-    Stack.push(v); 
-} 
-  
-// The function to do Topological Sort. It uses recursive  
-// topologicalSortUtil() 
-void Graph::topologicalSort() { 
-    stack<int> Stack; 
-  
-    // Mark all the vertices as not visited 
-    bool *visited = new bool[V]; 
-    for (int i = 0; i < V; i++) 
-        visited[i] = false; 
-  
-    // Call the recursive helper function to store Topological 
-    // Sort starting from all vertices one by one 
-    for (int i = 0; i < V; i++) 
-      if (visited[i] == false) 
-        topologicalSortUtil(i, visited, Stack); 
-  
-    // Print contents of stack 
-    while (Stack.empty() == false) { 
-        cout << Stack.top() << " "; 
-        Stack.pop(); 
+// adityaa30
+#include <bits/stdc++.h>
+#define int long long int
+#define debug(a) cout << #a << "=" << a << ' ';
+using namespace std;
+
+const int MOD = 1000000007;
+
+int PosX[] = {0, 1, 0, -1};
+int PosY[] = {1, 0, -1, 0};
+
+void TopoSort(vector<vector<int>> &adj) {
+  int V = adj.size();
+  vector<bool> visited(V, false);
+
+  bool isCycle = false;
+  stack<int> s;
+  function<void(int)> Util = [&](int curr) {
+    visited[curr] = true;
+    for (int child : adj[curr]) {
+      if (!visited[child]) {
+        Util(child);
+      }
     }
-    cout << endl; 
-} 
-  
-int main() { 
-    int v, e, temp1, temp2;
-    cin >> v >> e;
-    Graph g(v);
-    for(int i = 0; i < e; ++i) {
-        cin >> temp1 >> temp2;
-        g.addEdge(temp1, temp2);
+    s.push(curr);
+  };
+
+  for (int i = 0; i < V; ++i) {
+    if (!visited[i])
+      Util(i);
+  }
+
+  while (!s.empty()) {
+    cout << s.top() << " ";
+    s.pop();
+  }
+}
+
+int32_t main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
+  cout.tie(NULL);
+  cout << fixed << setprecision(20);
+
+  // Take input of a graph having V vertices & E edges
+  int V, E, a, b;
+  cin >> V >> E;
+  vector<vector<int>> adj(V, vector<int>());
+  for (int i = 0; i < E; ++i) {
+    // (a, b) are 0-indexed
+    cin >> a >> b;
+    adj[a].push_back(b);
+  }
+
+  vector<bool> visited(V, false), onCurrPath(V, false);
+  vector<int> order;
+  bool cycle = false;
+  function<void(int)> topoSort = [&](int curr) {
+    visited[curr] = true;
+    onCurrPath[curr] = true;
+    for (auto child : adj[curr]) {
+      if (onCurrPath[child]) {
+        cycle = true;
+        return;
+      } else if (!visited[child]) {
+        topoSort(child);
+      }
     }
-   
-    cout << "Following is a Topological Sort of the given graph \n"; 
-    g.topologicalSort(); 
-  
-    return 0; 
-} 
+
+    onCurrPath[curr] = false;
+    order.emplace_back(curr);
+  };
+
+  for (int i = 0; i < V; ++i) {
+    if (!visited[i])
+      topoSort(i);
+  }
+
+  if (cycle) {
+    cout << "Graph has a cyle\n";
+  } else {
+    reverse(order.begin(), order.end());
+    cout << "Topological Order: ";
+    for (auto x : order) {
+      cout << x << " ";
+    }
+  }
+
+  return 0;
+}

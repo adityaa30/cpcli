@@ -1,58 +1,87 @@
-#include <stdio.h> 
-#include <limits.h> 
-#include<stdbool.h> 
-#define V 5 
+// adityaa30
+#include <bits/stdc++.h>
+#define int long long int
+#define debug(a) cout << #a << "=" << a << ' ';
+#define print(it)                                                              \
+  cout << #it << ' -> ';                                                       \
+  for (auto __x__ : it)                                                        \
+    cout << __x__ << ' ';                                                      \
+  cout << '\n';
+using namespace std;
 
-int minKey(int key[], bool mstSet[]) { 
-int min = INT_MAX, min_index; 
+const int MOD = 1000000007;
 
-for (int v = 0; v < V; v++) 
-	if (mstSet[v] == false && key[v] < min) 
-		min = key[v], min_index = v; 
+int PosX[] = {0, 1, 0, -1, 1, 1, -1, -1};
+int PosY[] = {1, 0, -1, 0, 1, -1, 1, -1};
 
-    return min_index; 
-} 
+// pair(Weight, Idx)
 
-int printMST(int parent[], int n, int graph[V][V]) { 
-    printf("Edge \tWeight\n"); 
-    for (int i = 1; i < V; i++) 
-    	printf("%d - %d \t%d \n", parent[i], i, graph[i][parent[i]]); 
-} 
+struct Pair {
+  int weight, idx;
 
-void primMST(int graph[V][V]) { 
-	int parent[V]; 
-	int key[V]; 
-	bool mstSet[V]; 
+  Pair(int weight, int idx) : weight(weight), idx(idx) {}
+};
 
-	for (int i = 0; i < V; i++) 
-		key[i] = INT_MAX, mstSet[i] = false; 
+struct ComparePair {
+  bool operator()(Pair &a, Pair &b) { return a.weight < b.weight; }
+};
 
-	key[0] = 0;	 
-	parent[0] = -1; 
+void PrimsMST(vector<vector<Pair>> &adj) {
+  int V = adj.size();
+  vector<bool> visited(V, false);
+  vector<int> weights(V, INT_MAX), parent(V, -1);
+  priority_queue<Pair, vector<Pair>, ComparePair> pq;
 
-	for (int count = 0; count < V-1; count++) 	{ 
-		int u = minKey(key, mstSet); 
+  weights[0] = 0;
+  pq.push(Pair(0, 0));
 
-		mstSet[u] = true; 
+  while (!pq.empty()) {
+    Pair top = pq.top(); pq.pop();
+    visited[top.idx] = true;
+    for (Pair child : adj[top.idx]) {
+      if (!visited[child.idx] && child.weight < weights[child.idx]) {
+        weights[child.idx] = child.weight;
+        pq.push(child);
+        parent[child.idx] = top.idx;
+      }
+    }
+  }
 
-		for (int v = 0; v < V; v++) 
+  for (int i = 1; i < parent.size(); ++i) {
+    cout << i << " <-> " << parent[i] << '\n';
+  }
+}
 
-		if (graph[u][v] && !mstSet[v] && graph[u][v] < key[v]) 
-			parent[v] = u, key[v] = graph[u][v]; 
-	} 
+int32_t main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
+  cout.tie(NULL);
+  cout << fixed << setprecision(20);
 
-	printMST(parent, V, graph); 
-} 
+  int V = 9;
+  vector<vector<Pair>> adj(V);
 
+  function<void(int, int, int)> addEdge = [&](int a, int b, int weight) {
+    adj[a].push_back(Pair(weight, b));
+    adj[b].push_back(Pair(weight, a));
+  };
 
-int main() { 
-    int graph[V][V] = {{0, 2, 0, 6, 0}, 
-					{2, 0, 3, 8, 5}, 
-					{0, 3, 0, 0, 7}, 
-					{6, 8, 0, 0, 9}, 
-					{0, 5, 7, 9, 0}}; 
+  addEdge(0, 1, 4);
+  addEdge(0, 7, 8);
+  addEdge(1, 2, 8);
+  addEdge(1, 7, 11);
+  addEdge(2, 3, 7);
+  addEdge(2, 8, 2);
+  addEdge(2, 5, 4);
+  addEdge(3, 4, 9);
+  addEdge(3, 5, 14);
+  addEdge(4, 5, 10);
+  addEdge(5, 6, 2);
+  addEdge(6, 7, 1);
+  addEdge(6, 8, 6);
+  addEdge(7, 8, 7);
 
-	primMST(graph); 
+  PrimsMST(adj);
 
-	return 0; 
-} 
+  return 0;
+}

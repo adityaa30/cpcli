@@ -1,89 +1,87 @@
+// adityaa30
 #include <bits/stdc++.h>
-#include <limits.h>
-#define fio                           \
-    ios_base::sync_with_stdio(false); \
-    cin.tie(NULL);                    \
-    cout.tie(NULL);
-#define li int
-#define mod 1000000007
+#define int long long int
+#define debug(a) cout << #a << "=" << a << ' ';
+#define print(it)                                                              \
+  cout << #it << ' -> ';                                                       \
+  for (auto __x__ : it)                                                        \
+    cout << __x__ << ' ';                                                      \
+  cout << '\n';
 using namespace std;
 
-li graph[3001][3001];
+const int MOD = 1000000007;
 
-li minDistance(li dist[], bool sptSet[], li V)
-{
+int PosX[] = {0, 1, 0, -1, 1, 1, -1, -1};
+int PosY[] = {1, 0, -1, 0, 1, -1, 1, -1};
 
-    li min = INT_MAX, min_index;
-    for (li v = 0; v < V; v++)
-        if (sptSet[v] == false && dist[v] <= min)
-            min = dist[v], min_index = v;
-    return min_index;
-}
+// pair(Weight, Idx)
 
-void printSolution(li dist[], li V)
-{
-    // Prints the distance of all the vertices from the given source vertex
-    printf("Vertex\tDistance\n");
-    for (li i = 0; i < V; ++i)
-        if (dist[i] == INT_MAX)
-            printf("%d\t=>\tINF\n", i);
-        else
-            printf("%d\t=>\t%d\n", i, dist[i]);
-}
+struct Pair {
+  int weight, idx;
 
-void dijkstra(li graph[][3001], li src, li V)
-{
+  Pair(int weight, int idx) : weight(weight), idx(idx) {}
+};
 
-    li dist[V];
-    bool sptSet[V];
+struct ComparePair {
+  bool operator()(Pair &a, Pair &b) { return a.weight < b.weight; }
+};
 
-    for (li i = 0; i < V; i++)
-        dist[i] = INT_MAX, sptSet[i] = false;
+void Dijkstra(vector<vector<Pair>> &adj) {
+  int V = adj.size();
+  vector<bool> visited(V, false);
+  vector<int> distance(V, INT_MAX);
+  priority_queue<Pair, vector<Pair>, ComparePair> pq;
 
-    dist[src] = 0;
+  int src = 0;
+  distance[src] = 0;
+  pq.push(Pair(0, src));
 
-    for (li count = 0; count < V - 1; count++)
-    {
-        // *(graph + v + V *)
-        li u = minDistance(dist, sptSet, V);
-        sptSet[u] = true;
-        for (li v = 0; v < V; v++)
-            if (!sptSet[v] && graph[u][v] && dist[u] != INT_MAX && dist[u] + graph[u][v] < dist[v])
-                dist[v] = dist[u] + graph[u][v];
+  while (!pq.empty()) {
+    Pair top = pq.top(); pq.pop();
+    for (Pair child : adj[top.idx]) {
+      if (!visited[child.idx] &&
+          (distance[top.idx] + child.weight) < distance[child.idx]) {
+        distance[child.idx] = distance[top.idx] + child.weight;
+        pq.push(Pair(distance[child.idx], child.idx));
+      }
     }
+  }
 
-    printSolution(dist, V);
+  for (int i = 0; i < distance.size(); ++i) {
+    cout << "Distance(" << i << ") = " << distance[i] << '\n';
+  }
 }
 
-int main()
-{
-    fio;
+int32_t main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
+  cout.tie(NULL);
+  cout << fixed << setprecision(20);
 
-    // n -> Number of vertices
-    // v -> Number of edges
+  int V = 9;
+  vector<vector<Pair>> adj(V);
 
-    li n, m, x, y, wt, s;
-    scanf("%d %d", &n, &m);
+  function<void(int, int, int)> addEdge = [&](int a, int b, int weight) {
+    adj[a].push_back(Pair(weight, b));
+    adj[b].push_back(Pair(weight, a));
+  };
 
-    for (li i = 0; i < n; ++i)
-        for (li j = 0; j < n; ++j)
-            graph[i][j] = 0;
+  addEdge(0, 1, 4);
+  addEdge(0, 7, 8);
+  addEdge(1, 2, 8);
+  addEdge(1, 7, 11);
+  addEdge(2, 3, 7);
+  addEdge(2, 8, 2);
+  addEdge(2, 5, 4);
+  addEdge(3, 4, 9);
+  addEdge(3, 5, 14);
+  addEdge(4, 5, 10);
+  addEdge(5, 6, 2);
+  addEdge(6, 7, 1);
+  addEdge(6, 8, 6);
+  addEdge(7, 8, 7);
 
-    for (li i = 0; i < m; ++i)
-    {
-        scanf("%d %d %d", &x, &y, &wt);
+  Dijkstra(adj);
 
-        // If more than 2 edges are present between a pair of vertices,
-        // then take the edge with less weight.
-        if (graph[x - 1][y - 1] == 0 || graph[x - 1][y - 1] > wt)
-        {
-            graph[x - 1][y - 1] = wt;
-            graph[y - 1][x - 1] = wt;
-        }
-    }
-
-    scanf("%d", &s);
-    dijkstra(graph, s - 1, n);
-
-    return 0;
+  return 0;
 }

@@ -77,3 +77,16 @@ void PrintList(Node *head) {
   }
   cout << '\n';
 }
+
+void PrintListRandom(Node *head) {
+  while (head != NULL) {
+    if (head->random != NULL) {
+      cout << '(' << head->data << ',' << head->random->data << ") ";
+    } else {
+      cout << '(' << head->data << ",X) ";
+    }
+
+    head = head->next;
+  }
+  cout << '\n';
+}

@@ -9,6 +9,7 @@
   cout << '\n';
 using namespace std;
 
+const int INF = 1e9 + 5;
 const int MOD = 1000000007;
 
 int PosX[] = {0, 1, 0, -1, 1, 1, -1, -1};
@@ -33,10 +34,11 @@ void PrimsMST(vector<vector<Pair>> &adj) {
   priority_queue<Pair, vector<Pair>, ComparePair> pq;
 
   weights[0] = 0;
-  pq.push(Pair(0, 0));
+  pq.push(Pair(0, 0)); // (distance, node)
 
   while (!pq.empty()) {
-    Pair top = pq.top(); pq.pop();
+    Pair top = pq.top();
+    pq.pop();
     visited[top.idx] = true;
     for (Pair child : adj[top.idx]) {
       if (!visited[child.idx] && child.weight < weights[child.idx]) {
@@ -49,6 +51,39 @@ void PrimsMST(vector<vector<Pair>> &adj) {
 
   for (int i = 1; i < parent.size(); ++i) {
     cout << i << " <-> " << parent[i] << '\n';
+  }
+}
+
+void PrimsMSTN2(vector<vector<Pair>> &adj, int src = 0) {
+  int V = adj.size();
+  vector<bool> visited(V + 1, false);
+  vector<int> distance(V + 1, INF), parent(V + 1, -1);
+
+  function<int(void)> getMin = [&]() {
+    int idx = -1;
+    for (int i = 0; i < V; ++i) {
+      if (!visited[i] && (idx == -1 || distance[idx] > distance[i])) {
+        idx = i;
+      }
+    }
+    return idx;
+  };
+
+  distance[src] = 0;
+  for (int i = 0; i < V - 1; ++i) {
+    int idx = getMin();
+    visited[idx] = true;
+    for (Pair childEdge : adj[idx]) {
+      bool ok = childEdge.weight < distance[childEdge.idx];
+      if (!visited[childEdge.idx] && ok) {
+        parent[childEdge.idx] = idx;
+        distance[childEdge.idx] = childEdge.weight;
+      }
+    }
+  }
+
+  for (int i = 0; i < V; ++i) {
+    cout << i << " <-> " << parent[i] << " Edge=" << distance[i] << '\n';
   }
 }
 
@@ -81,7 +116,7 @@ int32_t main() {
   addEdge(6, 8, 6);
   addEdge(7, 8, 7);
 
-  PrimsMST(adj);
+  PrimsMSTN2(adj);
 
   return 0;
 }

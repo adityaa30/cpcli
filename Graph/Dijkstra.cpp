@@ -147,47 +147,48 @@ void DijkstraN2(vector<vector<Pair>> &adj, int src = 0) {
         distance[child.idx] = distance[idx] + child.weight;
       }
     }
-
-    for (int i = 0; i < N; ++i) {
-      cout << "Distance(" << i << ") = " << distance[i] << " Parent("
-           << parent[i] << ")\n";
-    }
   }
 
-  int32_t main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    cout.tie(NULL);
-    cout << fixed << setprecision(20);
-
-    int V = 9;
-    vector<vector<Pair>> adj(V);
-
-    function<void(int, int, int)> addEdge = [&](int a, int b, int weight) {
-      adj[a].push_back(Pair(weight, b));
-      adj[b].push_back(Pair(weight, a));
-    };
-
-    addEdge(0, 1, 4);
-    addEdge(0, 7, 8);
-    addEdge(1, 2, 8);
-    addEdge(1, 7, 11);
-    addEdge(2, 3, 7);
-    addEdge(2, 8, 2);
-    addEdge(2, 5, 4);
-    addEdge(3, 4, 9);
-    addEdge(3, 5, 14);
-    addEdge(4, 5, 10);
-    addEdge(5, 6, 2);
-    addEdge(6, 7, 1);
-    addEdge(6, 8, 6);
-    addEdge(7, 8, 7);
-
-    //   cout << "Using STL O(NLogE):\n";
-    //   Dijkstra(adj);
-
-    cout << "Without STL O(N*N):\n";
-    DijkstraN2(adj);
-
-    return 0;
+  for (int i = 0; i < N; ++i) {
+    cout << "Distance(" << i << ") = " << distance[i] << " Parent(" << parent[i]
+         << ")\n";
   }
+}
+
+int32_t main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
+  cout.tie(NULL);
+  cout << fixed << setprecision(20);
+
+  int V = 9;
+  vector<vector<Pair>> adj(V);
+
+  function<void(int, int, int)> addEdge = [&](int a, int b, int weight) {
+    adj[a].push_back(Pair(weight, b));
+    adj[b].push_back(Pair(weight, a));
+  };
+
+  addEdge(0, 1, 4);
+  addEdge(0, 7, 8);
+  addEdge(1, 2, 8);
+  addEdge(1, 7, 11);
+  addEdge(2, 3, 7);
+  addEdge(2, 8, 2);
+  addEdge(2, 5, 4);
+  addEdge(3, 4, 9);
+  addEdge(3, 5, 14);
+  addEdge(4, 5, 10);
+  addEdge(5, 6, 2);
+  addEdge(6, 7, 1);
+  addEdge(6, 8, 6);
+  addEdge(7, 8, 7);
+
+  //   cout << "Using STL O(NLogE):\n";
+  //   Dijkstra(adj);
+
+  cout << "Without STL O(N*N):\n";
+  DijkstraN2(adj);
+
+  return 0;
+}

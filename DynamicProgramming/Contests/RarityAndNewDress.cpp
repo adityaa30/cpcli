@@ -1,6 +1,7 @@
 // adityaa30
+// codeforces - Div2
+// Problem D : https://codeforces.com/contest/1393/problem/D
 #include <bits/stdc++.h>
-#define var(x) #x, x
 #define int long long int
 using namespace std;
 
@@ -13,9 +14,10 @@ template <typename A, typename B, typename C, typename D>
 string to_string(tuple<A, B, C, D> p);
 
 string to_string(const string &s) { return '"' + s + '"'; }
+
 string to_string(const char *s) { return to_string((string)s); }
+
 string to_string(bool b) { return (b ? "true" : "false"); }
-string to_string(char c) { return to_string(string(1, c)); }
 
 string to_string(vector<bool> v) {
   bool first = true;
@@ -69,20 +71,42 @@ string to_string(tuple<A, B, C, D> p) {
          to_string(get<2>(p)) + ", " + to_string(get<3>(p)) + ")";
 }
 
-void debug() { cout << endl; }
+void print() { cout << endl; }
 
-template <typename Head, typename... Tail> void debug(Head H, Tail... T) {
+template <typename Head, typename... Tail> void print(Head H, Tail... T) {
   cout << " " << to_string(H);
-  debug(T...);
+  print(T...);
 }
 
-const int MOD = 1e9 + 7;
+const int MOD = 1000000007;
 
 int PosX[] = {0, 1, 0, -1, 1, 1, -1, -1};
 int PosY[] = {1, 0, -1, 0, 1, -1, 1, -1};
 
 void Solve(int test) {
-  // Start here
+  int n, m;
+  cin >> n >> m;
+  vector<string> mat(n);
+  for (int i = 0; i < n; ++i)
+    cin >> mat[i];
+
+  vector<vector<int>> dp(n, vector<int>(m, 1));
+  int ans = 0;
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+
+      // dp[curr] = min({dp[up], dp[up-up], dp[up-left], dp[up-right]}) + 1;
+      if ((i - 2) >= 0 && (j - 1) >= 0 && (j + 1) < m &&
+          mat[i][j] == mat[i - 1][j] && mat[i][j] == mat[i - 2][j] &&
+          mat[i][j] == mat[i - 1][j - 1] && mat[i][j] == mat[i - 1][j + 1]) {
+        dp[i][j] += min(
+            {dp[i - 1][j], dp[i - 2][j], dp[i - 1][j - 1], dp[i - 1][j + 1]});
+      }
+      ans += dp[i][j];
+    }
+  }
+
+  cout << ans << '\n';
 }
 
 int32_t main() {
@@ -92,9 +116,8 @@ int32_t main() {
   cout << fixed << setprecision(20);
 
   int t = 1;
-  cin >> t;
+  //   cin >> t;
   for (int test = 1; test <= t; ++test) {
-    cout << "Case #" << test << ": ";
     Solve(test);
   }
 

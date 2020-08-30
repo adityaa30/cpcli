@@ -7,18 +7,21 @@ const int MOD = 1000000007;
 
 int random(int a, int b) { return a + rand() % (b - a + 1); }
 
+void GenerateCase(int test) {
+  //
+}
+
 int32_t main(int32_t argc, char *argv[]) {
+  srand(time(0));
   ios_base::sync_with_stdio(false);
   cin.tie(NULL);
   cout.tie(NULL);
   cout << fixed << setprecision(20);
 
-  srand(time(0));
-  int t = random(1, 10);
-  cout << t << "\n";
-  while (t--) {
-    // Generate test case here
-
+  int t = 1;
+  // cout << t << '\n';
+  for (int test = 1; test <= t; ++test) {
+    GenerateCase(test);
   }
 
   return 0;

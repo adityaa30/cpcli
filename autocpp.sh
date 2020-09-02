@@ -33,7 +33,26 @@ fi
 
 g++ -o program $1 -DLOCAL
 ans=`./program < $INPUT_FILE`
-echo $ans
 echo "$ans" > output.txt
 rm program
+
+if [ "$#" -eq "3" ]
+then
+    if [ ! -f "$3" ]; then
+        echo "Verify output '$3' does not exist."
+        exit 1
+    fi
+    DIFF=`diff -b output.txt $3`
+    if [ ! -z "${DIFF}" ]
+    then
+        echo "Sample Input\n"
+        cat $INPUT_FILE
+        echo "Sample Output\n"
+        cat $3
+        echo "Your output\n"
+        echo $ans
+        exit 1
+    fi
+fi
+
 exit 0

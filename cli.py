@@ -18,6 +18,81 @@ class InvalidContestURI(TypeError):
         return f'InvalidContestURI: {self.uri} is not a valid contest uri'
 
 
+class TestCase:
+    def __init__(
+        self, idx: int,
+        sample_input: str, sample_output: str,
+        question_dir: str
+    ) -> None:
+        self.idx = idx
+        self.sample_input = sample_input.strip(WHITE_SPACES)
+        self.sample_output = sample_output.strip(WHITE_SPACES)
+        self.question_dir = question_dir
+
+        self.input_path = os.path.join(self.question_dir, 'Input', f'{idx}.txt')
+        self.output_path = os.path.join(self.question_dir, 'Output', f'{idx}.txt')
+
+    def check_output(self, program_output) -> bool:
+        return program_output == self.sample_output
+
+    def save(self):
+        with open(self.input_path, 'w') as f:
+            f.write(self.sample_input)
+
+        with open(self.output_path, 'w') as f:
+            f.write(self.sample_output)
+
+
+class Question:
+    def __init__(self, idx: int, title: str, root_dir: str) -> None:
+        self.idx = idx
+        self.title = self.kebab_case(title)
+        self.test_cases: List[TestCase] = []
+        self.dir = os.path.join(root_dir, self.title)
+        self.input_dir = os.path.join(self.dir, 'Input')
+        self.output_dir = os.path.join(self.dir, 'Output')
+
+    @staticmethod
+    def kebab_case(val: str) -> str:
+        words = [
+            ''.join(c for c in word.strip(WHITE_SPACES) if c.isalnum() or c == '-')
+            for word in val.strip(WHITE_SPACES).split(' ')
+        ]
+        return '-'.join(words)
+
+    def add_test(self, sample_input: str, sample_output: str) -> None:
+        test_case = TestCase(
+            idx=len(self.test_cases),
+            sample_input=sample_input,
+            sample_output=sample_output,
+            question_dir=self.dir
+        )
+        self.test_cases.append(test_case)
+
+    def load(self):
+        tests = os.listdir(self.input_dir)
+        for test in tests:
+            input_path = os.path.join(self.input_dir, test)
+            output_path = os.path.join(self.output_dir, test)
+
+            with open(input_path, 'r') as f:
+                sample_input = f.read()
+
+            with open(output_path, 'r') as f:
+                sample_output = f.read()
+
+            self.add_test(sample_input, sample_output)
+
+    def save(self):
+        # Create the directories if not already exists
+        os.path.exists(self.dir) or os.makedirs(self.dir)
+        os.path.exists(self.input_dir) or os.makedirs(self.input_dir)
+        os.path.exists(self.output_dir) or os.makedirs(self.output_dir)
+
+        for test in self.test_cases:
+            test.save()
+
+
 class Platforms:
     PREFIX = {
         'cf': 'Codeforces',
@@ -60,24 +135,13 @@ class Scraper:
         template_extension = os.path.splitext(self.template_basename)[1]
         self.template_save_name = f'Solve{template_extension}'
 
-        self.questions = None
+        self.questions: Optional[List[Question]] = None
 
-    @staticmethod
-    def kebab_case(val: str) -> str:
-        words = [
-            ''.join(c for c in word.strip(WHITE_SPACES) if c.isalnum())
-            for word in val.strip(WHITE_SPACES).split(' ')
-        ]
-        return '-'.join(words)
-
-    def get_question(self, val: str) -> Optional[Dict]:
+    def get_question(self, val: str) -> Optional[Question]:
         for idx, question in enumerate(self.questions, start=0):
-            if str(idx) == val or val in question['title'].lower():
+            if str(idx) == val or val in question.title.lower():
                 return question
         return None
-
-    def get_question_path(self, title: str) -> Optional[str]:
-        return os.path.join(self.root_dir, str(self.contest), title, self.template_save_name)
 
     def run_test_cases(self, val: str, file: Optional[str] = None) -> None:
         question = self.get_question(val)
@@ -85,83 +149,44 @@ class Scraper:
         if not question:
             print('Invalid question entered. Following are available:')
             for idx, question in enumerate(self.questions, start=1):
-                print(f"[{idx}]\t{question['title']}")
+                print(f"[{question.idx}]\t{question.title}")
             return
 
         if file and not os.path.exists(file):
             print(f'"{file}" solution file do not exist')
             return
 
-        print(f'[#] Checking question: {question["title"]}')
+        assert(isinstance(question, Question))
+        print(f'[#] Checking question: {question.title}')
 
-        solution_file = file or self.get_question_path(question['title'])
-        question_dir = os.path.join(self.base_dir, question['title'])
-        input_dir = os.path.join(question_dir, 'Input')
-        output_dir = os.path.join(question_dir, 'Output')
+        solution_file = file or os.path.join(question.dir, self.template_save_name)
 
-        for idx in range(len(question['sample-tests'])):
-            sample_input_path = os.path.join(input_dir, f'{idx + 1}.txt')
-            sample_output_path = os.path.join(output_dir, f'{idx + 1}.txt')
+        for test_case in question.test_cases:
             response = subprocess.run([
                 f'./autocpp.sh '
-                f'{solution_file} {sample_input_path} {sample_output_path}'
-            ], shell=True, capture_output=True)
+                f'{solution_file} {test_case.input_path} {test_case.output_path}'
+            ], shell=True)
 
-            output = response.stdout.decode().strip(WHITE_SPACES)
-            correct = output == question['sample-tests'][idx][1]
-            result = '✅' if correct else '❌'
-            print(f'[#] Sample Test Case {idx + 1}: {result}')
+            result = '✅' if response.returncode == 0 else '❌'
+            print(f'[#] Sample Test Case {test_case.idx + 1}: {result}')
 
-            if not correct:
-                print('Sample Input:')
-                print(question['sample-tests'][idx][0], '\n')
-
-                print('Sample Output:')
-                print(question['sample-tests'][idx][1], '\n')
-
-                print('Your Output:')
-                print(output, '\n')
-
-                errors = response.stderr.decode().strip(WHITE_SPACES)
-                if errors:
-                    print('Errors:')
-                    print(errors, '\n')
-
-    def load_questions(self, force_download=False) -> List:
+    def load_questions(self, force_download=False) -> None:
         if force_download or (not os.path.exists(self.base_dir)):
             if self.platform == 'cf':
                 self.questions = self.get_questions_codeforces()
             elif self.platform == 'cc':
                 self.questions = self.get_questions_codechef()
+
+            self.save_questions()
             return
 
-        questions = []
+        questions: List[Question] = []
         titles = os.listdir(self.base_dir)
         titles.sort()
-        for title in titles:
-            question_dir = os.path.join(self.base_dir, title)
-            input_dir = os.path.join(question_dir, 'Input')
-            output_dir = os.path.join(question_dir, 'Output')
-
-            tests = os.listdir(input_dir)
-            test_cases = []
-
-            for test in tests:
-                input_path = os.path.join(input_dir, test)
-                output_path = os.path.join(output_dir, test)
-
-                with open(input_path, 'r') as f:
-                    sample_input = f.read()
-
-                with open(output_path, 'r') as f:
-                    sample_output = f.read()
-
-                test_cases.append((sample_input, sample_output))
-
-            questions.append({
-                'title': title,
-                'sample-tests': test_cases
-            })
+        for idx, title in enumerate(titles):
+            question = Question(idx, title, self.base_dir)
+            question.load()
+            questions.append(question)
 
         self.questions = questions
 
@@ -177,7 +202,7 @@ class Scraper:
 
         html = response.read().decode()
         conn.close()
-        questions = []
+        questions: List[Question] = []
 
         doc = document_fromstring(html)
         caption = doc.xpath('//div[@class="caption"]/text()')[0]
@@ -186,24 +211,22 @@ class Scraper:
         print('Scraping problems:')
 
         problems = doc.xpath('//div[@class="problem-statement"]')
-        for problem in problems:
+        for idx, problem in enumerate(problems):
             title = problem.find_class("title")[0].text_content()
+            question = Question(idx, title, self.base_dir)
+
             sample_tests = problem.find_class("sample-test")[0]
             inputs = sample_tests.find_class('input')
             outputs = sample_tests.find_class('output')
-            test_cases = []
 
             for inp, out in zip(inputs, outputs):
-                sample_input = inp.xpath('descendant-or-self::pre/text()')[0].strip(WHITE_SPACES)
-                sample_output = out.xpath('descendant-or-self::pre/text()')[0].strip(WHITE_SPACES)
-                test_cases.append((sample_input, sample_output))
+                sample_input = inp.xpath('descendant-or-self::pre/text()')[0]
+                sample_output = out.xpath('descendant-or-self::pre/text()')[0]
+                question.add_test(sample_input, sample_output)
 
-            questions.append({
-                'title': title,
-                'sample-tests': test_cases
-            })
+            questions.append(question)
 
-            print(f'[#]  {title} -- {len(test_cases)} Samples')
+            print(f'[#]  {title} -- {len(question.test_cases)} Samples')
 
         return questions
 
@@ -211,32 +234,14 @@ class Scraper:
         if self.questions is None:
             return
 
-        for num, question in enumerate(self.questions, start=1):
-            title = f"{num}-{self.kebab_case(question['title'])}"
-            question_dir = os.path.join(self.base_dir, title)
-            input_dir = os.path.join(question_dir, 'Input')
-            output_dir = os.path.join(question_dir, 'Output')
-
-            os.path.exists(question_dir) or os.makedirs(question_dir)
-            os.path.exists(input_dir) or os.makedirs(input_dir)
-            os.path.exists(output_dir) or os.makedirs(output_dir)
+        for question in self.questions:
+            question.save()
 
             # Copy the template
-            shutil.copy(self.template, question_dir)
-            solution_file = os.path.join(question_dir, self.template_basename)
-            solve_file = os.path.join(question_dir, self.template_save_name)
+            shutil.copy(self.template, question.dir)
+            solution_file = os.path.join(question.dir, self.template_basename)
+            solve_file = os.path.join(question.dir, self.template_save_name)
             os.rename(solution_file, solve_file)
-
-            # Save the test cases
-            for idx, (sample_input, sample_output) in enumerate(question['sample-tests'], start=1):
-                input_path = os.path.join(input_dir, f'{idx}.txt')
-                output_path = os.path.join(output_dir, f'{idx}.txt')
-
-                with open(input_path, 'w') as f:
-                    f.write(sample_input)
-
-                with open(output_path, 'w') as f:
-                    f.write(sample_output)
 
         print(f'Saved in {os.path.abspath(self.base_dir)}')
 
@@ -328,13 +333,31 @@ run_parser.add_argument(
     help='Path of the program file (different from default file)'
 )
 
+show_parser = sub_parsers.add_parser('show')
+show_parser.add_argument(
+    '-v', '--verbose',
+    action='store_true',
+    required=False,
+    default=False,
+    help='If True show all test cases (default=False)'
+)
+
 args = parser.parse_args()
 
 scraper = Scraper(args.contest[0], args.contest[1], args.template, args.path)
+scraper.load_questions()
 
 if args.command == 'download':
     scraper.load_questions(force_download=True)
-    scraper.save_questions()
 elif args.command == 'run':
-    scraper.load_questions()
     scraper.run_test_cases(args.question, args.solution_file)
+elif args.command == 'show':
+    for question in scraper.questions:
+        print(f'Question {question.idx + 1}: {question.title}')
+        if args.verbose:
+            for test in question.test_cases:
+                print(f'Test Case: {test.idx + 1}')
+                print('Input')
+                print(test.sample_input, '\n')
+                print('Output')
+                print(test.sample_output, '\n')

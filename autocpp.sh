@@ -1,28 +1,39 @@
+#!/bin/bash
+
+INPUT_FILE='input.txt'
+
 # Check if arguments passed are OK
-if [ $# != 1 ]
+if [ $# -le 0 ]
 then
-    echo "Usage: ./autocpp.sh <Program File>"
+    echo "Usage: ./autocpp.sh <Program File> [<input-file>]"
     echo "
 ✳️ This script will compile the given file
-✳️ Take input from ./input.txt and save to ./output.txt
-✳️ At the end approximate time of execution is also shown
+✳️ Take input from ./input.txt or <input-file> and save to ./output.txt
+✳️ If <verify-file> is provided then it compares with ./output.txt
 "
     GCC_VERSION=`g++ --version | head -n1`
     echo "NOTE: Program file should compile using ${GCC_VERSION}"
-    exit 0
+    exit 1
 fi
 
+if [ "$#" -le "3" ]; then
+    INPUT_FILE=$2
+fi
 
 if [ ! -f "$1" ]; then
     echo "Program File '$1' does not exist."
-    exit 0
+    exit 1
 fi
 
+if [ ! -f "$INPUT_FILE" ]; then
+    echo "Input File '$INPUT_FILE' does not exist."
+    exit 1
+fi
+
+
 g++ -o program $1 -DLOCAL
-start=$(($(date +%s%N)/1000000))
-ans=`./program < input.txt`
-end=$(($(date +%s%N)/1000000))
-echo "$ans" > output.txt
+ans=`./program < $INPUT_FILE`
 echo $ans
-echo "\nTime of execution: $(($end - $start)) ms"
+echo "$ans" > output.txt
 rm program
+exit 0

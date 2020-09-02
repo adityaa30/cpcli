@@ -35,6 +35,13 @@ class TestCase:
     def check_output(self, program_output) -> bool:
         return program_output == self.sample_output
 
+    def show(self) -> None:
+        print(f'Test Case: {self.idx + 1}')
+        print('Input')
+        print(self.sample_input, '\n')
+        print('Output')
+        print(self.sample_output, '\n')
+
     def save(self):
         with open(self.input_path, 'w') as f:
             f.write(self.sample_input)
@@ -82,6 +89,11 @@ class Question:
                 sample_output = f.read()
 
             self.add_test(sample_input, sample_output)
+
+    def show(self):
+        print(f'Question {self.idx + 1}: {self.title}')
+        for test in self.test_cases:
+            test.show()
 
     def save(self):
         # Create the directories if not already exists
@@ -138,7 +150,7 @@ class Scraper:
         self.questions: Optional[List[Question]] = None
 
     def get_question(self, val: str) -> Optional[Question]:
-        for idx, question in enumerate(self.questions, start=0):
+        for idx, question in enumerate(self.questions, start=1):
             if str(idx) == val or val in question.title.lower():
                 return question
         return None
@@ -341,6 +353,12 @@ show_parser.add_argument(
     default=False,
     help='If True show all test cases (default=False)'
 )
+show_parser.add_argument(
+    '-q', '--question',
+    action='store',
+    required=False,
+    help='Shows only test cases of the provided question'
+)
 
 args = parser.parse_args()
 
@@ -352,12 +370,20 @@ if args.command == 'download':
 elif args.command == 'run':
     scraper.run_test_cases(args.question, args.solution_file)
 elif args.command == 'show':
-    for question in scraper.questions:
-        print(f'Question {question.idx + 1}: {question.title}')
-        if args.verbose:
-            for test in question.test_cases:
-                print(f'Test Case: {test.idx + 1}')
-                print('Input')
-                print(test.sample_input, '\n')
-                print('Output')
-                print(test.sample_output, '\n')
+    if args.question:
+        question = scraper.get_question(args.question)
+
+        if not question:
+            print('Invalid question entered. Following are available:')
+            for idx, question in enumerate(scraper.questions, start=1):
+                print(f"[{question.idx}]\t{question.title}")
+                break
+        else:
+            question.show()
+
+    else:
+        for question in scraper.questions:
+            if args.verbose:
+                question.show()
+            else:
+                print(f'Question {question.idx + 1}: {question.title}')

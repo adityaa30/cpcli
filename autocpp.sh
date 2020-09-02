@@ -18,7 +18,7 @@ if [ ! -f "$1" ]; then
     exit 0
 fi
 
-g++ -o program $1
+g++ -o program $1 -DLOCAL
 start=$(($(date +%s%N)/1000000))
 ans=`./program < input.txt`
 end=$(($(date +%s%N)/1000000))

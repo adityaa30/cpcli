@@ -69,11 +69,15 @@ string to_string(tuple<A, B, C, D> p) {
          to_string(get<2>(p)) + ", " + to_string(get<3>(p)) + ")";
 }
 
+#ifdef LOCAL
 void debug() { cout << endl; }
+#endif
 
-template <typename Head, typename... Tail> void debug(Head H, Tail... T) {
+template <typename Head, typename... Tail> void debug(Head &H, Tail &... T) {
+#ifdef LOCAL
   cout << " " << to_string(H);
   debug(T...);
+#endif
 }
 
 const int MOD = 1e9 + 7;

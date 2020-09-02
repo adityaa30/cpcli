@@ -67,11 +67,22 @@ class Scraper:
         url = f'codeforces.com'
         conn = HTTPSConnection(url)
         conn.request("GET", f"/contest/{self.contest}/problems")
-        html = conn.getresponse().read().decode()
+        response = conn.getresponse()
+
+        if response.code != 200:
+            print(f'No contest found for codeforces/{self.contest} ❌❌')
+            return None
+
+        html = response.read().decode()
         conn.close()
         questions = []
 
         doc = document_fromstring(html)
+        caption = doc.xpath('//div[@class="caption"]/text()')[0]
+
+        print(f'Found: {caption} ✅')
+        print('Scraping problems:')
+
         problems = doc.xpath('//div[@class="problem-statement"]')
         for problem in problems:
             title = problem.find_class("title")[0].text_content()
@@ -90,9 +101,14 @@ class Scraper:
                 'sample-tests': test_cases
             })
 
+            print(f'[#]  {title} -- {len(test_cases)} Samples')
+
         return questions
 
     def write_to(self, root_dir: str) -> None:
+        if self.questions is None:
+            return
+
         base = os.path.join(root_dir, str(self.contest))
         for question in self.questions:
             title = self.kebab_case(question['title'])
@@ -112,6 +128,8 @@ class Scraper:
 
                 with open(output_path, 'w') as f:
                     f.write(sample_output)
+
+        print(f'Saved in {os.path.abspath(base)}')
 
     def get_questions_codechef(self) -> str:
         return 'ToDo'

@@ -119,6 +119,13 @@ class Platforms:
             return f'https://codeforces.com/contest/{contest}'
 
         raise TypeError(f"Invalid platform. Choose one of {self.PREFIX.keys()!r}")
+    
+    @classmethod
+    def get_dir_path(cls, root_dir: str, platform: str, contest: str) -> str:
+        if platform not in cls.PREFIX:
+            raise TypeError(f"Invalid platform. Choose one of {self.PREFIX.keys()!r}")
+
+        return os.path.join(root_dir, f'{cls.PREFIX[platform]}-{contest}')
 
     @classmethod
     def parse(cls, uri: str) -> Tuple[str]:
@@ -139,7 +146,7 @@ class Scraper:
         self.contest = contest
 
         self.root_dir = os.path.abspath(root_dir)
-        self.base_dir = os.path.join(self.root_dir, str(self.contest))
+        self.base_dir = Platforms.get_dir_path(root_dir, platform, contest)
 
         self.template = template
         self.template_basename = os.path.basename(template)
@@ -160,7 +167,7 @@ class Scraper:
 
         if not question:
             print('Invalid question entered. Following are available:')
-            for idx, question in enumerate(self.questions, start=1):
+            for question in self.questions:
                 print(f"[{question.idx}]\t{question.title}")
             return
 
@@ -202,7 +209,7 @@ class Scraper:
 
         self.questions = questions
 
-    def get_questions_codeforces(self) -> List:
+    def get_questions_codeforces(self) -> Optional[List[Question]]:
         url = f'codeforces.com'
         conn = HTTPSConnection(url)
         conn.request("GET", f"/contest/{self.contest}/problems")
@@ -253,12 +260,14 @@ class Scraper:
             shutil.copy(self.template, question.dir)
             solution_file = os.path.join(question.dir, self.template_basename)
             solve_file = os.path.join(question.dir, self.template_save_name)
-            os.rename(solution_file, solve_file)
+            if not os.path.exists(solve_file):
+                os.rename(solution_file, solve_file)
+
 
         print(f'Saved in {os.path.abspath(self.base_dir)}')
 
-    def get_questions_codechef(self) -> str:
-        return 'ToDo'
+    def get_questions_codechef(self) -> Optional[List[Question]]:
+        pass
 
 
 CONTEST_URI_HELP = f'''
@@ -363,11 +372,11 @@ show_parser.add_argument(
 args = parser.parse_args()
 
 scraper = Scraper(args.contest[0], args.contest[1], args.template, args.path)
-scraper.load_questions()
 
-if args.command == 'download':
-    scraper.load_questions(force_download=True)
-elif args.command == 'run':
+scraper.load_questions(force_download=(args.command == 'download'))
+
+
+if args.command == 'run':
     scraper.run_test_cases(args.question, args.solution_file)
 elif args.command == 'show':
     if args.question:

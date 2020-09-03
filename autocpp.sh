@@ -45,12 +45,17 @@ then
     DIFF=`diff -b output.txt $3`
     if [ ! -z "${DIFF}" ]
     then
-        echo "Sample Input\n"
+        echo "Sample Input"
         cat $INPUT_FILE
-        echo "Sample Output\n"
+        echo ""
+        echo ""
+        echo "Sample Output"
         cat $3
-        echo "Your output\n"
+        echo ""
+        echo ""
+        echo "Your output"
         echo $ans
+        echo ""
         exit 1
     fi
 fi

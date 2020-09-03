@@ -163,3 +163,16 @@ Question 3: C-Powered-Addition
 Question 4: D-Edge-Weight-Assignment
 Question 5: E-Perfect-Triples
 ```
+
+### Download Guide
+
+Only two files are required:
+
+1. [**`autocpp.sh`**](autocpp)
+2. [**`cli.py`**](cli)
+
+However, one file named [**`Template.cpp`**](template) is also required. This file will be used as default template for each question.
+
+[autocpp]: https://raw.githubusercontent.com/adityaa30/programs/master/autocpp.sh
+[cli]: https://raw.githubusercontent.com/adityaa30/programs/master/cli.py
+[template]: https://raw.githubusercontent.com/adityaa30/programs/master/Template.cpp

@@ -1,7 +1,7 @@
 # Programs
 
-![Commit](https://github.com/adityaa30/programs/workflows/Check%20Commit/badge.svg)
-![Test](https://github.com/adityaa30/programs/workflows/Test/badge.svg)
+![Commit](https://github.com/adityaa30/cp-cli/workflows/Check%20Commit/badge.svg)
+![Test](https://github.com/adityaa30/cp-cli/workflows/Test/badge.svg)
 
 ## Competitive Programming CLI
 
@@ -168,9 +168,9 @@ Question 5: E-Perfect-Triples
 
 Only two files are required:
 
-1. [**`autocpp.sh`**](https://raw.githubusercontent.com/adityaa30/programs/master/autocpp.sh)
-2. [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/programs/master/cli.py)
+1. [**`autocpp.sh`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/autocpp.sh)
+2. [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/cli.py)
 
 Note: Download both files in the same directory and it's all set to go! 🤖👾👽
 
-However, one file named [**`Template.cpp`**](https://raw.githubusercontent.com/adityaa30/programs/master/Template.cpp) is also required. This file will be used as default template for each question.
+However, one file named [**`Template.cpp`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/Template.cpp) is also required. This file will be used as default template for each question.

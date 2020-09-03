@@ -61,12 +61,12 @@ g++ $2 -o $TEST_DIR/safe
 g++ $3 -o $TEST_DIR/generator
 
 cd $TEST_DIR
-for i in {1..500}
+for i in {1..5000}
 do
   ./generator $i > input.txt
   ./program < input.txt > output_program.txt
   ./safe < input.txt > output_safe.txt
-  DIFF=`diff -w output_program.txt output_safe.txt`
+  DIFF=`diff -b output_program.txt output_safe.txt`
 
   if [ ! -z "${DIFF}" ]
   then

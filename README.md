@@ -171,4 +171,6 @@ Only two files are required:
 1. [**`autocpp.sh`**](https://raw.githubusercontent.com/adityaa30/programs/master/autocpp.sh)
 2. [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/programs/master/cli.py)
 
+Note: Download both files in the same directory and it's all set to go! 🤖👾👽
+
 However, one file named [**`Template.cpp`**](https://raw.githubusercontent.com/adityaa30/programs/master/Template.cpp) is also required. This file will be used as default template for each question.

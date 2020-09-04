@@ -24,12 +24,13 @@ class TestCase:
     def __init__(
         self, idx: int,
         sample_input: str, sample_output: str,
-        question_dir: str
+        question_dir: str, time_limit: int
     ) -> None:
         self.idx = idx
         self.sample_input = sample_input.strip(WHITE_SPACES)
         self.sample_output = sample_output.strip(WHITE_SPACES)
         self.question_dir = question_dir
+        self.time_limit = time_limit
 
         self.input_path = os.path.join(self.question_dir, 'Input', f'{idx}.txt')
         self.output_path = os.path.join(self.question_dir, 'Output', f'{idx}.txt')
@@ -58,7 +59,7 @@ class TestCase:
             text=True, encoding='utf-8'
         )
         try:
-            output, err = test_process.communicate(self.sample_input, timeout=1)
+            output, err = test_process.communicate(self.sample_input, timeout=self.time_limit)
             test_process.wait()
             if test_process.returncode == 0:
                 if output.strip(WHITE_SPACES) == self.sample_output:
@@ -79,9 +80,10 @@ class TestCase:
 
 
 class Question:
-    def __init__(self, idx: int, title: str, root_dir: str) -> None:
+    def __init__(self, idx: int, title: str, root_dir: str, time_limit: int = 5) -> None:
         self.idx = idx
         self.title = self.kebab_case(title)
+        self.time_limit = time_limit
         self.test_cases: List[TestCase] = []
         self.dir = os.path.join(root_dir, self.title)
         self.input_dir = os.path.join(self.dir, 'Input')
@@ -100,7 +102,8 @@ class Question:
             idx=len(self.test_cases),
             sample_input=sample_input,
             sample_output=sample_output,
-            question_dir=self.dir
+            question_dir=self.dir,
+            time_limit=self.time_limit
         )
         self.test_cases.append(test_case)
 
@@ -264,7 +267,9 @@ class Scraper:
         problems = doc.xpath('//div[@class="problem-statement"]')
         for idx, problem in enumerate(problems):
             title = problem.find_class("title")[0].text_content()
-            question = Question(idx, title, self.base_dir)
+            time_limit = problem.find_class("time-limit")[0].text_content()
+            time_limit = int(time_limit[len('time limit per test'):].split(' ')[0])
+            question = Question(idx, title, self.base_dir, time_limit=time_limit)
 
             sample_tests = problem.find_class("sample-test")[0]
             inputs = sample_tests.find_class('input')

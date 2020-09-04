@@ -140,7 +140,7 @@ class Question:
             test.save()
 
     def __str__(self) -> str:
-        return f'Question: {self.title} [⏰ {self.time_limit} sec] [{len(self.test_cases)} Samples]'
+        return f'Question {self.idx + 1}: {self.title} [⏰ {self.time_limit} sec] [{len(self.test_cases)} Samples]'
 
     __repr__ = __str__
 

@@ -179,11 +179,11 @@ Example:
 ```
 
 ```text
-Question 1: A-Filling-Diamonds
-Question 2: B-Sorted-Adjacent-Differences
-Question 3: C-Powered-Addition
-Question 4: D-Edge-Weight-Assignment
-Question 5: E-Perfect-Triples
+Question 1: A-Filling-Diamonds [⏰ 1 sec] [1 Samples]
+Question 2: B-Sorted-Adjacent-Differences [⏰ 1 sec] [1 Samples]
+Question 3: C-Powered-Addition [⏰ 1 sec] [1 Samples]
+Question 4: D-Edge-Weight-Assignment [⏰ 1 sec] [3 Samples]
+Question 5: E-Perfect-Triples [⏰ 2 sec] [1 Samples]
 ```
 
 ### Download Guide

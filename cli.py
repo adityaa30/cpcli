@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import json
 from subprocess import Popen, PIPE, TimeoutExpired
 from http.client import HTTPSConnection
 from typing import Dict, Tuple, List, Optional
@@ -24,16 +25,15 @@ class TestCase:
     def __init__(
         self, idx: int,
         sample_input: str, sample_output: str,
-        question_dir: str, time_limit: int
+        question,
     ) -> None:
         self.idx = idx
         self.sample_input = sample_input.strip(WHITE_SPACES)
         self.sample_output = sample_output.strip(WHITE_SPACES)
-        self.question_dir = question_dir
-        self.time_limit = time_limit
+        self.question = question
 
-        self.input_path = os.path.join(self.question_dir, 'Input', f'{idx}.txt')
-        self.output_path = os.path.join(self.question_dir, 'Output', f'{idx}.txt')
+        self.input_path = os.path.join(self.question.dir, 'Input', f'{idx}.txt')
+        self.output_path = os.path.join(self.question.dir, 'Output', f'{idx}.txt')
 
     def check_output(self, program_output) -> bool:
         return program_output == self.sample_output
@@ -59,14 +59,13 @@ class TestCase:
             text=True, encoding='utf-8'
         )
         try:
-            output, err = test_process.communicate(self.sample_input, timeout=self.time_limit)
-            test_process.wait()
+            output, err = test_process.communicate(self.sample_input, timeout=self.question.time_limit)
             if test_process.returncode == 0:
                 if output.strip(WHITE_SPACES) == self.sample_output:
                     message = f'✅'
                 else:
                     message = (
-                        f'❌\n'
+                        f'❌ (WA)\n'
                         f'Sample Input:\n{self.sample_input}\n\n'
                         f'Sample Output:\n{self.sample_output}\n\n'
                         f'Your Output:\n{output}\n\n'
@@ -74,7 +73,7 @@ class TestCase:
             else:
                 message = f'❌\n{err}'
         except TimeoutExpired:
-            message = f'❌ (TLE)'
+            message = f'❌ (TLE) [>{self.question.time_limit} sec]'
         finally:
             print(f'[#] Sample Test Case {self.idx + 1}: {message}')
 
@@ -86,6 +85,7 @@ class Question:
         self.time_limit = time_limit
         self.test_cases: List[TestCase] = []
         self.dir = os.path.join(root_dir, self.title)
+        self.metadata_path = os.path.join(self.dir, '.metadata.json')
         self.input_dir = os.path.join(self.dir, 'Input')
         self.output_dir = os.path.join(self.dir, 'Output')
 
@@ -102,8 +102,7 @@ class Question:
             idx=len(self.test_cases),
             sample_input=sample_input,
             sample_output=sample_output,
-            question_dir=self.dir,
-            time_limit=self.time_limit
+            question=self,
         )
         self.test_cases.append(test_case)
 
@@ -121,6 +120,10 @@ class Question:
 
             self.add_test(sample_input, sample_output)
 
+        with open(self.metadata_path, 'r') as f:
+            metadata = json.load(f)
+            self.time_limit = metadata['time_limit']
+
     def show(self):
         print(f'Question {self.idx + 1}: {self.title}')
         for test in self.test_cases:
@@ -134,6 +137,15 @@ class Question:
 
         for test in self.test_cases:
             test.save()
+
+        # Create a metadata.json and save extra details
+        metadata = {
+            'title': self.title,
+            'time_limit': self.time_limit,
+        }
+
+        with open(self.metadata_path, 'w') as f:
+            json.dump(metadata, f)
 
 
 class Platforms:

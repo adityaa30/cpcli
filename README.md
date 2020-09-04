@@ -122,16 +122,38 @@ By default, `run` will take the default `Solve.cpp` file inside the question dir
 Example:
 
 ```bash
-./cli.PY -c cf::1339 run 3
+./cli.py -c cf::1339 run 3
 # OR
-./cli.PY -c cf::1339 run powered
+./cli.py -c cf::1339 run powered
 # OR
-./cli.PY -c cf::1339 run add
+./cli.py -c cf::1339 run add
 ```
 
 ```text
 [#] Checking question: C-Powered-Addition
 [#] Sample Test Case 1: ✅
+```
+
+OR
+
+```text
+[#] Checking question: C-Powered-Addition
+[#] Sample Test Case 1: ❌ (WA)
+Sample Input:
+ ...
+
+Sample Output:
+ ...
+
+Your Output:
+ ...
+```
+
+OR
+
+```text
+[#] Checking question: C-Powered-Addition
+[#] Sample Test Case 1: ❌ (TLE) [>1 sec]
 ```
 
 ### `show`

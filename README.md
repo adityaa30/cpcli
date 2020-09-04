@@ -23,15 +23,15 @@ optional arguments:
                         Competitive programming template file
   -p PATH, --path PATH  Path of the dir where all input/output files are saved
   -c CONTEST, --contest CONTEST
-                        Uri format should be: <platform-prefix>::<contest-name> 
+                        Uri format should be: <platform-prefix>::<contest-name>
                         Contest Prefixes Supported: {'cc': 'Codechef', 'cf': 'Codeforces'}
-                        Eg: 
-                        Codeforces: cf::1382 
+                        Eg:
+                        Codeforces: cf::1382
                         Codechef: cc::JUNE20A (Coming Soon)
 ```
 
 
-For example to download **Codeforces Round #661 (Div. 3)** sample test cases, create a URI using the contest id. 
+For example to download **Codeforces Round #661 (Div. 3)** sample test cases, create a URI using the contest id.
 For the above contest - Link is **https://codeforces.com/contest/1399/**
 Contest ID is 1399 -> URI would become `cf::1399`
 
@@ -166,11 +166,6 @@ Question 5: E-Perfect-Triples
 
 ### Download Guide
 
-Only two files are required:
-
-1. [**`autocpp.sh`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/autocpp.sh)
-2. [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/cli.py)
-
-Note: Download both files in the same directory and it's all set to go! 🤖👾👽
+Download [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/cli.py) file in your programming directory. 🤖👾👽
 
 However, one file named [**`Template.cpp`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/Template.cpp) is also required. This file will be used as default template for each question.

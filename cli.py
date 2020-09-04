@@ -38,13 +38,6 @@ class TestCase:
     def check_output(self, program_output) -> bool:
         return program_output == self.sample_output
 
-    def show(self) -> None:
-        print(f'Test Case: {self.idx + 1}')
-        print('Input')
-        print(self.sample_input, '\n')
-        print('Output')
-        print(self.sample_output, '\n')
-
     def save(self):
         with open(self.input_path, 'w') as f:
             f.write(self.sample_input)
@@ -77,17 +70,34 @@ class TestCase:
         finally:
             print(f'[#] Sample Test Case {self.idx + 1}: {message}')
 
+    def __str__(self) -> str:
+        return (
+            f'Test Case: {self.idx + 1}\n'
+            f'Input\n\n'
+            f'{self.sample_input}\n'
+            f'Output\n\n'
+            f'{self.sample_output}\n'
+        )
+
+    __repr__ = __str__
+
 
 class Question:
-    def __init__(self, idx: int, title: str, root_dir: str, time_limit: int = 5) -> None:
+    def __init__(self, idx: int, title: str, root_dir: str, metadata: Dict) -> None:
         self.idx = idx
         self.title = self.kebab_case(title)
-        self.time_limit = time_limit
         self.test_cases: List[TestCase] = []
         self.dir = os.path.join(root_dir, self.title)
-        self.metadata_path = os.path.join(self.dir, '.metadata.json')
+        self.metadata = metadata
         self.input_dir = os.path.join(self.dir, 'Input')
         self.output_dir = os.path.join(self.dir, 'Output')
+
+    @property
+    def time_limit(self):
+        try:
+            return self.metadata[self.title]['time_limit']
+        except:
+            return 5
 
     @staticmethod
     def kebab_case(val: str) -> str:
@@ -120,15 +130,6 @@ class Question:
 
             self.add_test(sample_input, sample_output)
 
-        with open(self.metadata_path, 'r') as f:
-            metadata = json.load(f)
-            self.time_limit = metadata['time_limit']
-
-    def show(self):
-        print(f'Question {self.idx + 1}: {self.title}')
-        for test in self.test_cases:
-            test.show()
-
     def save(self):
         # Create the directories if not already exists
         os.path.exists(self.dir) or os.makedirs(self.dir)
@@ -138,14 +139,10 @@ class Question:
         for test in self.test_cases:
             test.save()
 
-        # Create a metadata.json and save extra details
-        metadata = {
-            'title': self.title,
-            'time_limit': self.time_limit,
-        }
+    def __str__(self) -> str:
+        return f'Question: {self.title} [⏰ {self.time_limit} sec] [{len(self.test_cases)} Samples]'
 
-        with open(self.metadata_path, 'w') as f:
-            json.dump(metadata, f)
+    __repr__ = __str__
 
 
 class Platforms:
@@ -190,6 +187,9 @@ class Scraper:
 
         self.root_dir = os.path.abspath(root_dir)
         self.base_dir = Platforms.get_dir_path(root_dir, platform, contest)
+        self.metadata_path = os.path.join(self.base_dir, 'metadata.json')
+        # Create a metadata.json and save extra details
+        self.metadata = {}
 
         self.template = template
         self.template_basename = os.path.basename(template)
@@ -229,6 +229,8 @@ class Scraper:
         compiled_args = [
             'g++', solution_file,
             '-o', compiled_executable,
+            # Add extra flags below 🛸🐙
+            '-DLOCAL'
         ]
 
         compile_process = Popen(compiled_args, stdout=PIPE)
@@ -246,11 +248,14 @@ class Scraper:
             self.save_questions()
             return
 
+        with open(self.metadata_path, 'r') as f:
+            self.metadata = json.load(f)
+
         questions: List[Question] = []
-        titles = os.listdir(self.base_dir)
+        titles = list(self.metadata.keys())
         titles.sort()
         for idx, title in enumerate(titles):
-            question = Question(idx, title, self.base_dir)
+            question = Question(idx, title, self.base_dir, metadata=self.metadata)
             question.load()
             questions.append(question)
 
@@ -281,7 +286,7 @@ class Scraper:
             title = problem.find_class("title")[0].text_content()
             time_limit = problem.find_class("time-limit")[0].text_content()
             time_limit = int(time_limit[len('time limit per test'):].split(' ')[0])
-            question = Question(idx, title, self.base_dir, time_limit=time_limit)
+            question = Question(idx, title, self.base_dir, metadata=self.metadata)
 
             sample_tests = problem.find_class("sample-test")[0]
             inputs = sample_tests.find_class('input')
@@ -292,6 +297,7 @@ class Scraper:
                 sample_output = out.xpath('descendant-or-self::pre/text()')[0]
                 question.add_test(sample_input, sample_output)
 
+            self.metadata[question.title] = {'time_limit': time_limit}
             questions.append(question)
 
             print(f'[#]  {title} -- {len(question.test_cases)} Samples')
@@ -311,6 +317,9 @@ class Scraper:
             if not os.path.exists(solve_file):
                 shutil.copy(self.template, question.dir)
                 os.rename(solution_file, solve_file)
+
+        with open(self.metadata_path, 'w') as f:
+            json.dump(self.metadata, f)
 
         print(f'Saved in {os.path.abspath(self.base_dir)}')
 
@@ -440,7 +449,7 @@ elif args.command == 'show':
 
     else:
         for question in scraper.questions:
+            print(question)
             if args.verbose:
-                question.show()
-            else:
-                print(f'Question {question.idx + 1}: {question.title}')
+                for test in question.test_cases:
+                    print(test)

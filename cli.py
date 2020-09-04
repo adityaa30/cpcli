@@ -2,7 +2,7 @@
 
 import os
 import shutil
-import subprocess
+from subprocess import Popen, PIPE, TimeoutExpired
 from http.client import HTTPSConnection
 from typing import Dict, Tuple, List, Optional
 from pprint import pformat
@@ -50,6 +50,32 @@ class TestCase:
 
         with open(self.output_path, 'w') as f:
             f.write(self.sample_output)
+
+    def execute(self, executable_path: str) -> None:
+        test_process = Popen(
+            [executable_path],
+            stdout=PIPE, stdin=PIPE, stderr=PIPE,
+            text=True, encoding='utf-8'
+        )
+        try:
+            output, err = test_process.communicate(self.sample_input, timeout=1)
+            test_process.wait()
+            if test_process.returncode == 0:
+                if output.strip(WHITE_SPACES) == self.sample_output:
+                    message = f'✅'
+                else:
+                    message = (
+                        f'❌\n'
+                        f'Sample Input:\n{self.sample_input}\n\n'
+                        f'Sample Output:\n{self.sample_output}\n\n'
+                        f'Your Output:\n{output}\n\n'
+                    )
+            else:
+                message = f'❌\n{err}'
+        except TimeoutExpired:
+            message = f'❌ (TLE)'
+        finally:
+            print(f'[#] Sample Test Case {self.idx + 1}: {message}')
 
 
 class Question:
@@ -121,7 +147,7 @@ class Platforms:
             return f'https://codeforces.com/contest/{contest}'
 
         raise TypeError(f"Invalid platform. Choose one of {self.PREFIX.keys()!r}")
-    
+
     @classmethod
     def get_dir_path(cls, root_dir: str, platform: str, contest: str) -> str:
         if platform not in cls.PREFIX:
@@ -182,14 +208,18 @@ class Scraper:
 
         solution_file = file or os.path.join(question.dir, self.template_save_name)
 
-        for test_case in question.test_cases:
-            response = subprocess.run([
-                f'./autocpp.sh '
-                f'{solution_file} {test_case.input_path} {test_case.output_path}'
-            ], shell=True)
+        # Store the executable file in question's directory
+        compiled_executable = os.path.join(question.dir, 'program')
 
-            result = '✅' if response.returncode == 0 else '❌'
-            print(f'[#] Sample Test Case {test_case.idx + 1}: {result}')
+        compiled_args = [
+            'g++', solution_file,
+            '-o', compiled_executable,
+        ]
+
+        compile_process = Popen(compiled_args, stdout=PIPE)
+        compile_process.wait()
+        for test_case in question.test_cases:
+            test_case.execute(compiled_executable)
 
     def load_questions(self, force_download=False) -> None:
         if force_download or (not os.path.exists(self.base_dir)):
@@ -259,12 +289,11 @@ class Scraper:
             question.save()
 
             # Copy the template
-            shutil.copy(self.template, question.dir)
-            solution_file = os.path.join(question.dir, self.template_basename)
             solve_file = os.path.join(question.dir, self.template_save_name)
+            solution_file = os.path.join(question.dir, self.template_basename)
             if not os.path.exists(solve_file):
+                shutil.copy(self.template, question.dir)
                 os.rename(solution_file, solve_file)
-
 
         print(f'Saved in {os.path.abspath(self.base_dir)}')
 

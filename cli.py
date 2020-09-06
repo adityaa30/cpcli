@@ -83,10 +83,10 @@ class TestCase:
     def __str__(self) -> str:
         return (
             f'Test Case: {self.idx + 1}\n'
-            f'Input\n\n'
-            f'{self.sample_input}\n'
-            f'Output\n\n'
-            f'{self.sample_output}\n'
+            f'Input\n'
+            f'{self.sample_input}\n\n'
+            f'Output\n'
+            f'{self.sample_output}\n\n'
         )
 
     __repr__ = __str__
@@ -449,15 +449,14 @@ elif args.command == 'show':
 
         if not question:
             print('Invalid question entered. Following are available:')
-            for idx, question in enumerate(scraper.questions, start=1):
-                print(f"[{question.idx}]\t{question.title}")
-                break
+            for question in scraper.questions:
+                print(question)
         else:
-            question.show()
+            print(question)
+            [print(test) for test in question.test_cases]
 
     else:
         for question in scraper.questions:
             print(question)
             if args.verbose:
-                for test in question.test_cases:
-                    print(test)
+                [print(test) for test in question.test_cases]

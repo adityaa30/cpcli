@@ -13,6 +13,17 @@ from lxml.html import document_fromstring
 WHITE_SPACES = ' \n\t'
 
 
+def multiline_input() -> str:
+    lines = []
+    while True:
+        line = input()
+        if line:
+            lines.append(line)
+        else:
+            break
+    return '\n'.join(lines)
+
+
 class InvalidContestURI(TypeError):
     def __init__(self, uri: str) -> None:
         self.uri = uri
@@ -78,7 +89,7 @@ class TestCase:
         except TimeoutExpired:
             message = f'❌ (TLE) [>{self.question.time_limit} sec]'
         finally:
-            print(f'[#] Sample Test Case {self.idx + 1}: {message}')
+            print(f'[#] {"Custom" if self.custom_testcase else "Sample"} Test Case {self.idx + 1}: {message}')
 
     def __str__(self) -> str:
         return (
@@ -221,6 +232,12 @@ class Scraper:
             if str(idx) == val or val in question.title.lower():
                 return question
         return None
+
+    def show_all_questions(self, verbose: bool = False) -> None:
+        for question in self.questions:
+            print(question)
+            if verbose:
+                [print(test) for test in question.test_cases]
 
     def run_test_cases(self, val: str, file: Optional[str] = None) -> None:
         question = self.get_question(val)
@@ -411,7 +428,7 @@ run_parser.add_argument(
     'question',
     action='store',
     type=str,
-    help='Path to the C++ program file or Question Name or 1 based index'
+    help='Substring representing Question Name or 1 based index'
 )
 run_parser.add_argument(
     '-s', '--solution-file',
@@ -436,6 +453,14 @@ show_parser.add_argument(
     help='Shows only test cases of the provided question'
 )
 
+testcase = sub_parsers.add_parser('testcase')
+testcase.add_argument(
+    '-q', '--question',
+    action='store',
+    required=True,
+    help='Substring representing Question Name or 1 based index'
+)
+
 args = parser.parse_args()
 
 scraper = Scraper(args.contest[0], args.contest[1], args.template, args.path)
@@ -449,14 +474,26 @@ elif args.command == 'show':
 
         if not question:
             print('Invalid question entered. Following are available:')
-            for question in scraper.questions:
-                print(question)
+            scraper.show_all_questions()
         else:
             print(question)
             [print(test) for test in question.test_cases]
 
     else:
-        for question in scraper.questions:
-            print(question)
-            if args.verbose:
-                [print(test) for test in question.test_cases]
+        scraper.show_all_questions(verbose=args.verbose)
+
+elif args.command == 'testcase':
+    question = scraper.get_question(args.question)
+
+    if not question:
+        print('Invalid question entered. Following are available:')
+        scraper.show_all_questions()
+    else:
+        print(f'Selected: {question.title}')
+        print(f'Enter Sample Input:  (leave empty line to submit)')
+        sample_input = multiline_input()
+        print(f'Enter Sample Output:  (leave empty line to submit)')
+        sample_output = multiline_input()
+
+        question.add_test(sample_input, sample_output, custom_testcase=True)
+        scraper.save_questions()

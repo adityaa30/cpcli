@@ -154,6 +154,19 @@ class Question:
         )
         self.test_cases.append(test_case)
 
+    def remove_test(self, idx: int) -> TestCase:
+        idx = int(idx)
+        done = False
+        to_remove = None
+        for testcase in self.test_cases:
+            if to_remove is not None:
+                testcase.idx -= 1
+            elif testcase.idx == idx:
+                to_remove = testcase
+
+        to_remove and self.test_cases.remove(to_remove)
+        return to_remove
+
     def __str__(self) -> str:
         return f'Question {self.idx + 1}: {self.title} [⏰ {self.time_limit} sec] [{len(self.test_cases)} Samples]'
 
@@ -460,6 +473,20 @@ testcase.add_argument(
     required=True,
     help='Substring representing Question Name or 1 based index'
 )
+testcase_group = testcase.add_mutually_exclusive_group()
+testcase_group.add_argument(
+    '-a', '--add',
+    action='store_true',
+    required=False,
+    default=False,
+    help='Add a new custom test case'
+)
+testcase_group.add_argument(
+    '-d', '--delete',
+    action='store',
+    required=False,
+    help='Add a new custom test case'
+)
 
 args = parser.parse_args()
 
@@ -490,10 +517,20 @@ elif args.command == 'testcase':
         scraper.show_all_questions()
     else:
         print(f'Selected: {question.title}')
-        print(f'Enter Sample Input:  (leave empty line to submit)')
-        sample_input = multiline_input()
-        print(f'Enter Sample Output:  (leave empty line to submit)')
-        sample_output = multiline_input()
+        if args.add:
+            print(f'Enter Sample Input:  (leave empty line to submit)')
+            sample_input = multiline_input()
+            print(f'Enter Sample Output:  (leave empty line to submit)')
+            sample_output = multiline_input()
 
-        question.add_test(sample_input, sample_output, custom_testcase=True)
-        scraper.save_questions()
+            question.add_test(sample_input, sample_output, custom_testcase=True)
+            scraper.save_questions()
+        elif args.delete:
+            test = question.remove_test(args.delete)
+            if test:
+                print(f'Deleted {test}')
+                scraper.save_questions()
+            else:
+                print(f'[#] No valid test with idx={args.delete} found ❗')
+        else:
+            print('[#] No option chosen ❗')

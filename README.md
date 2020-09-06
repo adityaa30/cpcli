@@ -55,45 +55,17 @@ Saved in ./ContestFiles/Codeforces-1339
 All the problems will be saved in a tree like structure as below::
 
 ```text
-ContestFiles/
+ContestFiles
 └── Codeforces-1339
-    ├── A-Filling-Diamonds
-    │   ├── Input
-    │   │   └── 0.txt
-    │   ├── Output
-    │   │   └── 0.txt
-    │   └── Solve.cpp
-    ├── B-Sorted-Adjacent-Differences
-    │   ├── Input
-    │   │   └── 0.txt
-    │   ├── Output
-    │   │   └── 0.txt
-    │   └── Solve.cpp
-    ├── C-Powered-Addition
-    │   ├── Input
-    │   │   └── 0.txt
-    │   ├── Output
-    │   │   └── 0.txt
-    │   └── Solve.cpp
-    ├── D-Edge-Weight-Assignment
-    │   ├── Input
-    │   │   ├── 0.txt
-    │   │   ├── 1.txt
-    │   │   └── 2.txt
-    │   ├── Output
-    │   │   ├── 0.txt
-    │   │   ├── 1.txt
-    │   │   └── 2.txt
-    │   └── Solve.cpp
-    └── E-Perfect-Triples
-        ├── Input
-        │   └── 0.txt
-        ├── Output
-        │   └── 0.txt
-        └── Solve.cpp
+    ├── A-Filling-Diamonds.cpp
+    ├── B-Sorted-Adjacent-Differences.cpp
+    ├── C-Powered-Addition.cpp
+    ├── D-Edge-Weight-Assignment.cpp
+    ├── E-Perfect-Triples.cpp
+    └── metadata.json
 ```
 
-Here, `Solve.cpp` is a Template file (default copied from `./Template.cpp`). To specify a custom template use `-t` or `--template` flag
+Here, `*.cpp` is a copy of Template file (by default taken from `./Template.cpp`). To specify a custom template use `-t` or `--template` flag.
 
 ```bash
 ./cli.py -t <path-to-template> -c cf::1339 download

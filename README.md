@@ -57,11 +57,11 @@ Contest ID is 1399 -> URI would become `cf::1399`
 ```text
 Found: Codeforces Round #633 (Div. 2) ✅
 Scraping problems:
-[#]  A. Filling Diamonds -- 1 Samples
-[#]  B. Sorted Adjacent Differences -- 1 Samples
-[#]  C. Powered Addition -- 1 Samples
-[#]  D. Edge Weight Assignment -- 3 Samples
-[#]  E. Perfect Triples -- 1 Samples
+Question 1: A-Filling-Diamonds [⏰ 1 sec] [1 Samples]
+Question 2: B-Sorted-Adjacent-Differences [⏰ 1 sec] [1 Samples]
+Question 3: C-Powered-Addition [⏰ 1 sec] [1 Samples]
+Question 4: D-Edge-Weight-Assignment [⏰ 1 sec] [3 Samples]
+Question 5: E-Perfect-Triples [⏰ 2 sec] [1 Samples]
 Saved in ./ContestFiles/Codeforces-1339
 ```
 

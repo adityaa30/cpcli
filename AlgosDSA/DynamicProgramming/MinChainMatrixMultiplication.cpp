@@ -1,51 +1,48 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void PrintBrackets(int *brackets, int i, int j, int n, char &alpha) {
+using vi = vector<int>;
+using vvi = vector<vi>;
+
+void PrintBrackets(vvi &brackets, int i, int j, int n, char &alpha) {
   if (i == j) {
-    printf("%c", alpha++);
+    cout << alpha;
+    alpha += 1;
     return;
   }
-  printf("(");
-  PrintBrackets(brackets, i, *((brackets + i * n) + j), n, alpha);
-  PrintBrackets(brackets, *((brackets + i * n) + j) + 1, j, n, alpha);
-  printf(")");
+  cout << "(";
+  PrintBrackets(brackets, i, brackets[i][j], n, alpha);
+  PrintBrackets(brackets, brackets[i][j] + 1, j, n, alpha);
+  cout << ")";
 }
 
-int Matrix(int *p, int n) {
-  int dp[n][n], j, bracket[n][n], temp;
+int Matrix(vector<int> &p) {
+  const int n = p.size();
+  vvi dp(n, vi(n, INT_MAX)), bracket(n, vi(n, INT_MAX));
 
   for (int i = 1; i < n; ++i)
     dp[i][i] = 0;
 
   for (int L = 2; L < n; ++L) {
     for (int i = 1; i < n - L + 1; ++i) {
-      j = i + L - 1;
+      int j = i + L - 1;
       for (int k = i; k < j; ++k) {
-        temp = dp[i][k] + dp[k + 1][j] + p[i - 1] * p[k] * p[j];
-        if (temp < dp[i][j]) {
-          dp[i][j] = temp;
+        int foo = dp[i][k] + dp[k + 1][j] + p[i - 1] * p[k] * p[j];
+        if (foo < dp[i][j]) {
+          dp[i][j] = foo;
           bracket[i][j] = k;
         }
       }
     }
   }
-
+  char start = 'A';
+  PrintBrackets(bracket, 1, n - 1, n, start);
+  cout << "\n";
   return dp[1][n - 1];
 }
 
-int FasterMatrix(vector<int> p) {
-  int n = p.size();
-  vector<vector<int>> dp(n, vector<int>(n, 0));
-
-  for (int L = 0; L < n - 1; ++L) {
-    for (int i = 0; i < n - L; ++i) {
-      dp[i][i + L] = min(dp[i + 1][i + L] + p[i - 1] * p[i] * p[i + L],
-                         dp[i][i + L - 1] + p[i - 1] * p[i + L - 1] * p[i + L]);
-    }
-  }
-
-  return dp[1][n - 1];
+int main() {
+  vector<int> inp = {1, 2, 3, 4, 3};
+  cout << Matrix(inp);
+  return 0;
 }
-
-int main() { return 0; }

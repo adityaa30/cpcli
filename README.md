@@ -5,6 +5,19 @@
 
 ## Competitive Programming CLI
 
+### Download Guide
+
+Download [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/cli.py) file in your programming directory. 🤖👾👽
+
+However, one file named [**`Template.cpp`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/Template.cpp) is also required. This file will be used as default template for each question.
+
+### Requirements
+
+- Python 3.6+
+- [lxml](https://pypi.org/project/lxml/)
+
+### Docs
+
 ```bash
 ./cli.py --help
 ```
@@ -27,7 +40,7 @@ optional arguments:
                         Contest Prefixes Supported: {'cc': 'Codechef', 'cf': 'Codeforces'}
                         Eg:
                         Codeforces: cf::1382
-                        Codechef: cc::JUNE20A (Coming Soon)
+                        Codechef: cc::JUNE20A
 ```
 
 
@@ -157,9 +170,3 @@ Question 3: C-Powered-Addition [⏰ 1 sec] [1 Samples]
 Question 4: D-Edge-Weight-Assignment [⏰ 1 sec] [3 Samples]
 Question 5: E-Perfect-Triples [⏰ 2 sec] [1 Samples]
 ```
-
-### Download Guide
-
-Download [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/cli.py) file in your programming directory. 🤖👾👽
-
-However, one file named [**`Template.cpp`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/Template.cpp) is also required. This file will be used as default template for each question.

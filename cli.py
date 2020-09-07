@@ -10,7 +10,7 @@ from pprint import pformat
 from argparse import ArgumentParser
 from lxml.html import document_fromstring
 
-WHITE_SPACES = ' \n\t'
+WHITE_SPACES = ' \n\t\r'
 
 
 def multiline_input() -> str:
@@ -108,7 +108,12 @@ class Question:
         self.idx = idx
         self.title = self.kebab_case(title)
         self.base_dir = base_dir
-        self.time_limit = time_limit
+
+        try:
+            self.time_limit = int(time_limit)
+        except:
+            self.time_limit = 5
+
         self.test_cases: List[TestCase] = []
 
     @property
@@ -147,8 +152,8 @@ class Question:
     def add_test(self, sample_input: str, sample_output: str, custom_testcase: bool = False) -> None:
         test_case = TestCase(
             idx=len(self.test_cases),
-            sample_input=sample_input,
-            sample_output=sample_output,
+            sample_input=sample_input.strip(WHITE_SPACES),
+            sample_output=sample_output.strip(WHITE_SPACES),
             question=self,
             custom_testcase=custom_testcase
         )
@@ -215,7 +220,7 @@ class Scraper:
 
         self.root_dir = os.path.abspath(root_dir)
         self.base_dir = Platforms.get_dir_path(self.root_dir, platform, contest)
-        self.metadata_path = os.path.join(self.base_dir, 'metadata.json')
+        self.metadata_path = os.path.join(self.base_dir, '.metadata.json')
 
         self.template = template
 
@@ -241,6 +246,7 @@ class Scraper:
         return self.to_dict()
 
     def get_question(self, val: str) -> Optional[Question]:
+        val = val.lower()
         for idx, question in enumerate(self.questions, start=1):
             if str(idx) == val or val in question.title.lower():
                 return question
@@ -313,6 +319,7 @@ class Scraper:
 
         if response.code != 200:
             print(f'No contest found for codeforces/{self.contest} ❌❌')
+            conn.close()
             return None
 
         html = response.read().decode()
@@ -342,7 +349,7 @@ class Scraper:
                 question.add_test(sample_input, sample_output)
 
             questions.append(question)
-            print(f'[#]  {title} -- {len(question.test_cases)} Samples')
+            print(question)
 
         return questions
 
@@ -364,7 +371,82 @@ class Scraper:
         print(f'Saved in {os.path.abspath(self.base_dir)}')
 
     def get_questions_codechef(self) -> Optional[List[Question]]:
-        pass
+        print(f'Downloading page https://www.codechef.com/{self.contest}')
+
+        url = f'www.codechef.com'
+        conn = HTTPSConnection(url)
+        conn.request('GET', f'/api/contests/{self.contest}')
+        response = conn.getresponse()
+
+        if response.code != 200:
+            print(f'No contest found for codechef/{self.contest} ❌❌')
+            conn.close()
+            return None
+
+        data = json.loads(response.read().decode())
+        conn.close()
+        questions: List[Question] = []
+
+        caption = data['name']
+        print(f'Found: {caption} ✅')
+        print('Scraping problems:')
+        problems = list(data['problems'].keys())
+
+        def scrape_test_case(input_marker: str, output_marker: str, body: str):
+            body_low = body.lower()
+            input_idx, output_idx = body_low.find(input_marker, 0), body_low.find(output_marker, 0)
+            inputs, outputs = [], []
+            while input_idx != -1:
+                input_start = body.find('```', input_idx)
+                input_end = body.find('```', input_start + 3)
+                inputs.append(body[input_start + 3: input_end])
+
+                output_start = body.find('```', output_idx)
+                output_end = body.find('```', output_start + 3)
+                outputs.append(body[output_start + 3: output_end])
+
+                input_idx, output_idx = body_low.find(input_marker, input_end), body_low.find(output_marker, output_end)
+
+            return zip(inputs, outputs)
+
+        def get_question(problem: Dict) -> Question:
+            title = problem['problem_code'] + ' ' + problem['problem_name']
+            time_limit = problem['max_timelimit']
+            question = Question(idx, title, self.base_dir, time_limit)
+
+            body = problem['body']
+            for inp, out in scrape_test_case('example input', 'example output', body):
+                question.add_test(inp, out)
+            for inp, out in scrape_test_case('sample input', 'sample output', body):
+                question.add_test(inp, out)
+
+            return question
+
+        idx, max_retries = 0, 3
+        for name in problems:
+            for _ in range(max_retries):
+                problems_data = data.get('problems_data', None)
+                problem = problems_data.get(name, None) if problems_data else None
+                if problem is None or problem['status'] != 'success':
+                    conn = HTTPSConnection(url)
+                    conn.request('GET', f'/api/contests/{self.contest}/problems/{name}')
+                    response = conn.getresponse()
+
+                    if response.code != 200:
+                        conn.close()
+                        break
+
+                    problem = json.loads(response.read().decode())
+                    conn.close()
+
+                if problem['status'] == 'success':
+                    question = get_question(problem)
+                    questions.append(question)
+                    print(question)
+                    idx += 1
+                    break
+
+        return questions
 
 
 CONTEST_URI_HELP = f'''

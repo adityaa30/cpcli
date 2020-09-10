@@ -3,6 +3,8 @@
 import os
 import shutil
 import json
+import string
+import math
 from subprocess import Popen, PIPE, TimeoutExpired
 from http.client import HTTPSConnection
 from typing import Dict, Tuple, List, Optional
@@ -10,7 +12,7 @@ from pprint import pformat
 from argparse import ArgumentParser
 from lxml.html import document_fromstring
 
-WHITE_SPACES = ' \n\t\r'
+WHITE_SPACES = string.whitespace
 
 
 def multiline_input() -> str:
@@ -22,6 +24,12 @@ def multiline_input() -> str:
         else:
             break
     return '\n'.join(lines)
+
+
+def compare(s1: str, s2: str) -> bool:
+    remove = string.punctuation + string.whitespace
+    translation = str.maketrans(dict.fromkeys(remove))
+    return s1.translate(translation) == s2.translate(translation)
 
 
 class InvalidContestURI(TypeError):
@@ -75,7 +83,7 @@ class TestCase:
         try:
             output, err = test_process.communicate(self.sample_input, timeout=self.question.time_limit)
             if test_process.returncode == 0:
-                if output.strip(WHITE_SPACES) == self.sample_output:
+                if compare(output, self.sample_output):
                     message = f'✅'
                 else:
                     message = (
@@ -110,7 +118,7 @@ class Question:
         self.base_dir = base_dir
 
         try:
-            self.time_limit = int(time_limit)
+            self.time_limit = math.ceil(float(time_limit))
         except:
             self.time_limit = 5
 
@@ -281,7 +289,16 @@ class Scraper:
             'g++', question.path,
             '-o', compiled_executable,
             # Add extra flags below 🛸🐙
-            '-DLOCAL'
+            '-DLOCAL',
+            #  '-Wall', '-Wextra',
+            # '-pedantic', '-std=c++11', '-O2',
+            # '-Wshadow', '-Wformat=2', '-Wfloat-equal',
+            # '-Wconversion', '-Wlogical-op', '-Wshift-overflow=2',
+            # '-Wduplicated-cond', '-Wcast-qual', '-Wcast-align',
+            # '-D_GLIBCXX_DEBUG', '-D_GLIBCXX_DEBUG_PEDANTIC',
+            # '-D_FORTIFY_SOURCE=2', '-fsanitize=address',
+            # '-fsanitize=undefined', '-fno-sanitize-recover',
+            # '-fstack-protector'
         ]
 
         compile_process = Popen(compiled_args, stdout=PIPE)
@@ -336,7 +353,7 @@ class Scraper:
         for idx, problem in enumerate(problems):
             title = problem.find_class("title")[0].text_content()
             time_limit = problem.find_class("time-limit")[0].text_content()
-            time_limit = int(time_limit[len('time limit per test'):].split(' ')[0])
+
             question = Question(idx, title, self.base_dir, time_limit)
 
             sample_tests = problem.find_class("sample-test")[0]

@@ -1,4 +1,4 @@
-// adityaa30
+// https://github.com/adityaa30/cp-cli/blob/master/Template.cpp
 #include <bits/stdc++.h>
 #define var(x) #x, x
 #define int long long int
@@ -98,7 +98,7 @@ int32_t main() {
   int t = 1;
   cin >> t;
   for (int test = 1; test <= t; ++test) {
-    cout << "Case #" << test << ": ";
+    // cout << "Case #" << test << ": ";
     Solve(test);
   }
 

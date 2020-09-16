@@ -8,5 +8,5 @@ setup(
     name='cp-cli',
     version='1.0',
     description='Competitive Programming CLI',
-    long_description=open('README.md').read(),
+    long_description=open('README.md', 'r', encoding='utf-8').read(),
 )

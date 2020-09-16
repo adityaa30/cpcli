@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        environment: [security, flake8]
+        environment: [security, flake8, pylint, typing]
         python-version: [3.6]
 
     name: ${{ matrix.os }} / ${{ matrix.environment }}

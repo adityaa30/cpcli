@@ -10,7 +10,14 @@ __pycache__/
 # Environment files
 venv
 
+# Test files
+.tox
+
+# Distribution packaging
+*.egg-info/
+
 # Misc
 */program
 program
 *.txt
+ContestFiles

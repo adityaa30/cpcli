@@ -1,35 +1,21 @@
-#!/bin/python3
-
+import json
+import math
 import os
 import shutil
-import json
 import string
-import math
-from subprocess import Popen, PIPE, TimeoutExpired
 from http.client import HTTPSConnection
+from subprocess import Popen, PIPE, TimeoutExpired
 from typing import Dict, Tuple, List, Optional
-from pprint import pformat
-from argparse import ArgumentParser
+
 from lxml.html import document_fromstring
 
 WHITE_SPACES = string.whitespace
 
 
-def multiline_input() -> str:
-    lines = []
-    while True:
-        line = input()
-        if line:
-            lines.append(line)
-        else:
-            break
-    return '\n'.join(lines)
-
-
-def compare(s1: str, s2: str) -> bool:
+def compare(s_1: str, s_2: str) -> bool:
     remove = string.whitespace
     translation = str.maketrans(dict.fromkeys(remove))
-    return s1.translate(translation) == s2.translate(translation)
+    return s_1.translate(translation) == s_2.translate(translation)
 
 
 class InvalidContestURI(TypeError):
@@ -42,10 +28,10 @@ class InvalidContestURI(TypeError):
 
 class TestCase:
     def __init__(
-        self, idx: int,
-        sample_input: str, sample_output: str,
-        question,
-        custom_testcase: bool = False
+            self, idx: int,
+            sample_input: str, sample_output: str,
+            question,
+            custom_testcase: bool = False
     ) -> None:
         self.idx = idx
         self.sample_input = sample_input.strip(WHITE_SPACES)
@@ -63,7 +49,7 @@ class TestCase:
             custom_testcase=metadata['custom_testcase']
         )
 
-    def to_dict(self) -> str:
+    def to_dict(self) -> Dict:
         return {
             'idx': self.idx,
             'sample_input': self.sample_input,
@@ -78,13 +64,13 @@ class TestCase:
         test_process = Popen(
             [executable_path],
             stdout=PIPE, stdin=PIPE, stderr=PIPE,
-            text=True, encoding='utf-8'
+            encoding='utf-8'
         )
         try:
             output, err = test_process.communicate(self.sample_input, timeout=self.question.time_limit)
             if test_process.returncode == 0:
                 if compare(output, self.sample_output):
-                    message = f'✅'
+                    message = '✅'
                 else:
                     message = (
                         f'❌ (WA)\n'
@@ -119,7 +105,7 @@ class Question:
 
         try:
             self.time_limit = math.ceil(float(time_limit))
-        except:
+        except ValueError:
             self.time_limit = 5
 
         self.test_cases: List[TestCase] = []
@@ -167,9 +153,8 @@ class Question:
         )
         self.test_cases.append(test_case)
 
-    def remove_test(self, idx: int) -> TestCase:
+    def remove_test(self, idx: int) -> Optional[TestCase]:
         idx = int(idx)
-        done = False
         to_remove = None
         for testcase in self.test_cases:
             if to_remove is not None:
@@ -177,7 +162,8 @@ class Question:
             elif testcase.idx == idx:
                 to_remove = testcase
 
-        to_remove and self.test_cases.remove(to_remove)
+        if to_remove:
+            self.test_cases.remove(to_remove)
         return to_remove
 
     def __str__(self) -> str:
@@ -199,22 +185,22 @@ class Platforms:
         elif platform == 'cf':
             return f'https://codeforces.com/contest/{contest}'
 
-        raise TypeError(f"Invalid platform. Choose one of {self.PREFIX.keys()!r}")
+        raise TypeError(f"Invalid platform. Choose one of {cls.PREFIX.keys()!r}")
 
     @classmethod
     def get_dir_path(cls, root_dir: str, platform: str, contest: str) -> str:
         if platform not in cls.PREFIX:
-            raise TypeError(f"Invalid platform. Choose one of {self.PREFIX.keys()!r}")
+            raise TypeError(f"Invalid platform. Choose one of {cls.PREFIX.keys()!r}")
 
         return os.path.join(root_dir, f'{cls.PREFIX[platform]}-{contest}')
 
     @classmethod
-    def parse(cls, uri: str) -> Tuple[str]:
+    def parse(cls, uri: str) -> Tuple[str, str]:
         idx = uri.find("::")
         if idx == -1:
             raise InvalidContestURI(uri)
 
-        platform, contest = uri[:idx], uri[idx+2:]
+        platform, contest = uri[:idx], uri[idx + 2:]
         if platform not in Platforms.PREFIX or not contest.isalnum():
             raise InvalidContestURI(uri)
 
@@ -232,12 +218,14 @@ class Scraper:
 
         self.template = template
 
-        self.questions: Optional[List[Question]] = None
+        self.questions: List[Question] = []
 
-        os.path.exists(self.base_dir) or os.makedirs(self.base_dir)
+        if not os.path.exists(self.base_dir):
+            print(f'[#] Creating base directory: {self.base_dir}')
+            os.makedirs(self.base_dir)
 
     def to_dict(self) -> Dict:
-        metadata = {
+        metadata: Dict = {
             'platform': self.platform,
             'contest': self.contest,
             'base_dir': self.base_dir,
@@ -264,7 +252,8 @@ class Scraper:
         for question in self.questions:
             print(question)
             if verbose:
-                [print(test) for test in question.test_cases]
+                for test in question.test_cases:
+                    print(test)
 
     def run_test_cases(self, val: str, file: Optional[str] = None) -> None:
         question = self.get_question(val)
@@ -279,7 +268,6 @@ class Scraper:
             print(f'"{file}" solution file do not exist')
             return
 
-        assert(isinstance(question, Question))
         print(f'[#] Checking question: {question.title}')
 
         # Store the executable file in question's directory
@@ -315,29 +303,28 @@ class Scraper:
                 self.questions = self.get_questions_codeforces()
             elif self.platform == 'cc':
                 self.questions = self.get_questions_codechef()
-
             self.save_questions()
             return
 
         self.questions = []
-        with open(self.metadata_path, 'r') as f:
-            metadata = json.load(f)
+        with open(self.metadata_path, 'r') as file:
+            metadata = json.load(file)
 
         for question in metadata['questions']:
             self.questions.append(Question.from_dict(question))
 
-    def get_questions_codeforces(self) -> Optional[List[Question]]:
+    def get_questions_codeforces(self) -> List[Question]:
         print(f'Downloading page https://codeforces.com/contest/{self.contest}/problems')
 
-        url = f'codeforces.com'
+        url = 'codeforces.com'
         conn = HTTPSConnection(url)
         conn.request("GET", f"/contest/{self.contest}/problems")
         response = conn.getresponse()
 
-        if response.code != 200:
-            print(f'No contest found for codeforces/{self.contest} ❌❌')
+        if response.getcode() != 200:
+            err = Exception(f'No contest found for codeforces/{self.contest} ❌❌')
             conn.close()
-            return None
+            raise err
 
         html = response.read().decode()
         conn.close()
@@ -372,7 +359,7 @@ class Scraper:
         return questions
 
     def save_questions(self) -> None:
-        if self.questions is None:
+        if len(self.questions) == 0:
             return
 
         for question in self.questions:
@@ -383,31 +370,29 @@ class Scraper:
                 os.rename(template_named_file, question.path)
 
         # Save/Update the metadata
-        with open(self.metadata_path, 'w') as f:
-            json.dump(self.metadata, f, indent=2)
+        with open(self.metadata_path, 'w') as file:
+            json.dump(self.metadata, file, indent=2)
 
         print(f'Saved in {os.path.abspath(self.base_dir)}')
 
-    def get_questions_codechef(self) -> Optional[List[Question]]:
+    def get_questions_codechef(self) -> List[Question]:
         print(f'Downloading page https://www.codechef.com/{self.contest}')
 
-        url = f'www.codechef.com'
+        url = 'www.codechef.com'
         conn = HTTPSConnection(url)
         conn.request('GET', f'/api/contests/{self.contest}')
         response = conn.getresponse()
+        conn.close()
 
-        if response.code != 200:
-            print(f'No contest found for codechef/{self.contest} ❌❌')
-            conn.close()
-            return None
+        if response.getcode() != 200:
+            err = Exception(f'No contest found for codechef/{self.contest} ❌❌')
+            raise err
 
         data = json.loads(response.read().decode())
-        conn.close()
         questions: List[Question] = []
 
         caption = data['name']
-        print(f'Found: {caption} ✅')
-        print('Scraping problems:')
+        print(f'Found: {caption} ✅', 'Scraping problems:\n', sep='\n')
         problems = list(data['problems'].keys())
 
         def scrape_test_case(input_marker: str, output_marker: str, body: str):
@@ -423,7 +408,8 @@ class Scraper:
                 output_end = body.find('```', output_start + 3)
                 outputs.append(body[output_start + 3: output_end])
 
-                input_idx, output_idx = body_low.find(input_marker, input_end), body_low.find(output_marker, output_end)
+                input_idx = body_low.find(input_marker, input_end)
+                output_idx = body_low.find(output_marker, output_end)
 
             return zip(inputs, outputs)
 
@@ -450,7 +436,7 @@ class Scraper:
                     conn.request('GET', f'/api/contests/{self.contest}/problems/{name}')
                     response = conn.getresponse()
 
-                    if response.code != 200:
+                    if response.getcode() != 200:
                         conn.close()
                         break
 
@@ -465,172 +451,3 @@ class Scraper:
                     break
 
         return questions
-
-
-CONTEST_URI_HELP = f'''
-Uri format should be: <platform-prefix>::<contest-name>
-Contest Prefixes Supported: {pformat(Platforms.PREFIX)}
-Eg:
-\tCodeforces: cf::1382
-\tCodechef: cc::JUNE20A
-'''
-
-CONTEST_FILES_DIR = 'ContestFiles'
-
-
-def readable_dir(path):
-    error = TypeError(f'readable_dir:{path} is not a valid dir')
-
-    if path == CONTEST_FILES_DIR and not os.path.exists(path):
-        os.mkdir(CONTEST_FILES_DIR)
-
-    if not os.path.isdir(path):
-        raise error
-    if os.access(path, os.R_OK):
-        return path
-    else:
-        raise error
-
-
-def readable_file(path):
-    error = TypeError(f'readable_file:{path} is not a valid file')
-
-    if not os.path.isfile(path):
-        raise error
-    if os.access(path, os.R_OK):
-        return os.path.abspath(path)
-    else:
-        raise error
-
-
-def contest_uri(uri):
-    return Platforms.parse(uri)
-
-
-parser = ArgumentParser(description='Competitive Programming Helper')
-parser.add_argument(
-    '-t', '--template',
-    action='store',
-    type=readable_file,
-    default='Template.cpp',
-    required=False,
-    help='Competitive programming template file',
-)
-
-parser.add_argument(
-    '-p', '--path',
-    action='store',
-    type=readable_dir,
-    default=CONTEST_FILES_DIR,
-    required=False,
-    help='Path of the dir where all input/output files are saved'
-)
-
-parser.add_argument(
-    '-c', '--contest',
-    action='store',
-    type=contest_uri,
-    required=True,
-    help=CONTEST_URI_HELP
-)
-
-sub_parsers = parser.add_subparsers(dest='command')
-download_parser = sub_parsers.add_parser('download')
-run_parser = sub_parsers.add_parser('run')
-run_parser.add_argument(
-    'question',
-    action='store',
-    type=str,
-    help='Substring representing Question Name or 1 based index'
-)
-run_parser.add_argument(
-    '-s', '--solution-file',
-    action='store',
-    type=readable_file,
-    required=False,
-    help='Path of the program file (different from default file)'
-)
-
-show_parser = sub_parsers.add_parser('show')
-show_parser.add_argument(
-    '-v', '--verbose',
-    action='store_true',
-    required=False,
-    default=False,
-    help='If True show all test cases (default=False)'
-)
-show_parser.add_argument(
-    '-q', '--question',
-    action='store',
-    required=False,
-    help='Shows only test cases of the provided question'
-)
-
-testcase = sub_parsers.add_parser('testcase')
-testcase.add_argument(
-    '-q', '--question',
-    action='store',
-    required=True,
-    help='Substring representing Question Name or 1 based index'
-)
-testcase_group = testcase.add_mutually_exclusive_group()
-testcase_group.add_argument(
-    '-a', '--add',
-    action='store_true',
-    required=False,
-    default=False,
-    help='Add a new custom test case'
-)
-testcase_group.add_argument(
-    '-d', '--delete',
-    action='store',
-    required=False,
-    help='Add a new custom test case'
-)
-
-args = parser.parse_args()
-
-scraper = Scraper(args.contest[0], args.contest[1], args.template, args.path)
-scraper.load_questions(force_download=(args.command == 'download'))
-
-if args.command == 'run':
-    scraper.run_test_cases(args.question, args.solution_file)
-elif args.command == 'show':
-    if args.question:
-        question = scraper.get_question(args.question)
-
-        if not question:
-            print('Invalid question entered. Following are available:')
-            scraper.show_all_questions()
-        else:
-            print(question)
-            [print(test) for test in question.test_cases]
-
-    else:
-        scraper.show_all_questions(verbose=args.verbose)
-
-elif args.command == 'testcase':
-    question = scraper.get_question(args.question)
-
-    if not question:
-        print('Invalid question entered. Following are available:')
-        scraper.show_all_questions()
-    else:
-        print(f'Selected: {question.title}')
-        if args.add:
-            print(f'Enter Sample Input:  (leave empty line to submit)')
-            sample_input = multiline_input()
-            print(f'Enter Sample Output:  (leave empty line to submit)')
-            sample_output = multiline_input()
-
-            question.add_test(sample_input, sample_output, custom_testcase=True)
-            scraper.save_questions()
-        elif args.delete:
-            test = question.remove_test(args.delete)
-            if test:
-                print(f'Deleted {test}')
-                scraper.save_questions()
-            else:
-                print(f'[#] No valid test with idx={args.delete} found ❗')
-        else:
-            print('[#] No option chosen ❗')

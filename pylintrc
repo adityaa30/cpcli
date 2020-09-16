@@ -1,0 +1,30 @@
+[MASTER]
+persistent=no
+jobs=1  # >1 hides results
+
+# duplicate-code
+min-similarity-lines=8
+ignore-imports=yes
+
+max-line-length=119
+
+[MESSAGES CONTROL]
+disable=abstract-method,
+        fixme,
+        inherit-non-class,
+        missing-docstring,
+        no-else-return,
+        no-self-argument,
+        no-self-use,
+        superfluous-parens,
+        super-init-not-called,
+        too-many-ancestors,
+        too-many-arguments,
+        too-many-format-args,
+        too-many-function-args,
+        too-many-instance-attributes,
+        too-many-lines,
+        too-many-locals,
+        too-many-public-methods,
+        too-many-return-statements,
+        unexpected-keyword-arg

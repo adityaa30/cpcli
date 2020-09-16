@@ -27,7 +27,7 @@ def multiline_input() -> str:
 
 
 def compare(s1: str, s2: str) -> bool:
-    remove = string.punctuation + string.whitespace
+    remove = string.whitespace
     translation = str.maketrans(dict.fromkeys(remove))
     return s1.translate(translation) == s2.translate(translation)
 
@@ -353,6 +353,7 @@ class Scraper:
         for idx, problem in enumerate(problems):
             title = problem.find_class("title")[0].text_content()
             time_limit = problem.find_class("time-limit")[0].text_content()
+            time_limit = int(time_limit[len('time limit per test'):].split(' ')[0])
 
             question = Question(idx, title, self.base_dir, time_limit)
 

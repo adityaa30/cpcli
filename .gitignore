@@ -1,13 +1,16 @@
+# IDE
 .vscode
 .idea
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files
+venv
+
+# Misc
 */program
 program
-temp.cpp
-
 *.txt
-
-Compete
-ContestFiles
-
-Introduction to Algorithms - 3rd Edition.pdf

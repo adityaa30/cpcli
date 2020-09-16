@@ -1,7 +1,7 @@
 #!/bin/bash
 IFS=$'\n'; set -f
 
-CHECK_DIR=`pwd`
+CHECK_DIR=`./`
 
 if [ $# == 1 ]
 then

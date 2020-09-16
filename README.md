@@ -5,23 +5,31 @@
 
 ### Download Guide
 
-Download [**`cli.py`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/cli.py) file in your programming directory. 🤖👾👽
+```bash
+# Clone the repository
+git clone https://github.com/adityaa30/cp-cli
 
-However, one file named [**`Template.cpp`**](https://raw.githubusercontent.com/adityaa30/cp-cli/master/Template.cpp) is also required. This file will be used as default template for each question.
+# Change directory to the cloned directory
+cd cp-cli
+
+# Install
+pip install -e .
+``` 
 
 ### Requirements
 
 - Python 3.6+
 - [lxml](https://pypi.org/project/lxml/)
+- [zope.interface](https://pypi.org/project/zope.interface/)
 
 ### Docs
 
 ```bash
-./cli.py --help
+cpcli --help
 ```
 
 ```text
-usage: cli.py [-h] [-t TEMPLATE] [-p PATH] -c CONTEST {download,run,show} ...
+usage: cpcli [-h] [-t TEMPLATE] [-p PATH] -c CONTEST {download,run,show} ...
 
 Competitive Programming Helper
 
@@ -49,7 +57,7 @@ Contest ID is 1399 -> URI would become `cf::1399`
 ### `download`
 
 ```bash
-./cli.py -c cf::1339 download
+cpcli -c cf::1339 download
 ```
 
 ```text
@@ -79,17 +87,17 @@ ContestFiles
 Here, `*.cpp` is a copy of Template file (by default taken from `./Template.cpp`). To specify a custom template use `-t` or `--template` flag.
 
 ```bash
-./cli.py -t <path-to-template> -c cf::1339 download
+cpcli -t <path-to-template> -c cf::1339 download
 ```
 
 ### `run`
 
 ```bash
-./cli.py -c cf::1339 run -h
+cpcli -c cf::1339 run -h
 ```
 
 ```text
-usage: cli.py run [-h] [-s SOLUTION_FILE] question
+usage: cpcli run [-h] [-s SOLUTION_FILE] question
 
 positional arguments:
   question              Path to the C++ program file or Question Name or 1 based index
@@ -105,11 +113,11 @@ By default, `run` will take the default `Solve.cpp` file inside the question dir
 Example:
 
 ```bash
-./cli.py -c cf::1339 run 3
+cpcli -c cf::1339 run 3
 # OR
-./cli.py -c cf::1339 run powered
+cpcli -c cf::1339 run powered
 # OR
-./cli.py -c cf::1339 run add
+cpcli -c cf::1339 run add
 ```
 
 ```text
@@ -142,11 +150,11 @@ OR
 ### `show`
 
 ```bash
-./cli.py -c cf::1339 show -h
+cpcli -c cf::1339 show -h
 ```
 
 ```text
-usage: cli.py show [-h] [-v] [-q QUESTION]
+usage: cpcli show [-h] [-v] [-q QUESTION]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -158,7 +166,7 @@ optional arguments:
 Example:
 
 ```bash
-./cli.py -c cf::1339 show
+cpcli -c cf::1339 show
 ```
 
 ```text

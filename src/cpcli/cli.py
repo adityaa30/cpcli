@@ -268,7 +268,6 @@ class Scraper:
             print(f'"{file}" solution file do not exist')
             return
 
-        assert (isinstance(question, Question))
         print(f'[#] Checking question: {question.title}')
 
         # Store the executable file in question's directory

@@ -1,0 +1,7 @@
+skips:
+  - B101 # assert_used
+  - B309 # blacklist
+  - B322 # blacklist
+  - B404 # blacklist
+  - B410 # blacklist
+  - B603 # subprocess_without_shell_equals_true

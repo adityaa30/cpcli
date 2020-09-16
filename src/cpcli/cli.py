@@ -1,5 +1,3 @@
-#!/bin/python3
-
 import os
 import shutil
 import json

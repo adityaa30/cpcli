@@ -3,6 +3,7 @@ import os
 from cpcli.cli import Platforms
 from cpcli.utils.constants import DEFAULT_CONTEST_FILES_DIR
 
+
 def readable_dir(path):
     error = TypeError(f'readable_dir:{path} is not a valid dir')
 
@@ -26,6 +27,7 @@ def readable_file(path):
         return os.path.abspath(path)
     else:
         raise error
+
 
 def contest_uri(uri):
     return Platforms.parse(uri)

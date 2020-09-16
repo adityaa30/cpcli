@@ -1,12 +1,10 @@
-import sys
 from argparse import ArgumentParser
 
 from cpcli.commands import BaseCommand
 
 
-def execute(argv=None):
-    if argv is None:
-        argv = sys.argv
+def execute():
     parser = ArgumentParser(description='Competitive Programming Helper')
     command = BaseCommand.from_parser(parser)
-    print(argv, command.subcommands)
+    args = parser.parse_args()
+    command.run(args)

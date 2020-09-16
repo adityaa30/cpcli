@@ -3,9 +3,7 @@ import math
 import os
 import shutil
 import string
-from argparse import ArgumentParser
 from http.client import HTTPSConnection
-from pprint import pformat
 from subprocess import Popen, PIPE, TimeoutExpired
 from typing import Dict, Tuple, List, Optional
 
@@ -83,7 +81,7 @@ class TestCase:
             output, err = test_process.communicate(self.sample_input, timeout=self.question.time_limit)
             if test_process.returncode == 0:
                 if compare(output, self.sample_output):
-                    message = f'✅'
+                    message = '✅'
                 else:
                     message = (
                         f'❌ (WA)\n'
@@ -118,7 +116,7 @@ class Question:
 
         try:
             self.time_limit = math.ceil(float(time_limit))
-        except:
+        except ValueError:
             self.time_limit = 5
 
         self.test_cases: List[TestCase] = []
@@ -330,7 +328,7 @@ class Scraper:
     def get_questions_codeforces(self) -> List[Question]:
         print(f'Downloading page https://codeforces.com/contest/{self.contest}/problems')
 
-        url = f'codeforces.com'
+        url = 'codeforces.com'
         conn = HTTPSConnection(url)
         conn.request("GET", f"/contest/{self.contest}/problems")
         response = conn.getresponse()
@@ -392,8 +390,7 @@ class Scraper:
     def get_questions_codechef(self) -> List[Question]:
         print(f'Downloading page https://www.codechef.com/{self.contest}')
 
-        url = f'www.codechef.com'
-        conn = HTTPSConnection(url)
+        conn = HTTPSConnection('www.codechef.com')
         conn.request('GET', f'/api/contests/{self.contest}')
         response = conn.getresponse()
 
@@ -407,8 +404,7 @@ class Scraper:
         questions: List[Question] = []
 
         caption = data['name']
-        print(f'Found: {caption} ✅')
-        print('Scraping problems:')
+        print(f'Found: {caption} ✅', 'Scraping problems:\n', sep='\n')
         problems = list(data['problems'].keys())
 
         def scrape_test_case(input_marker: str, output_marker: str, body: str):
@@ -424,7 +420,8 @@ class Scraper:
                 output_end = body.find('```', output_start + 3)
                 outputs.append(body[output_start + 3: output_end])
 
-                input_idx, output_idx = body_low.find(input_marker, input_end), body_low.find(output_marker, output_end)
+                input_idx = body_low.find(input_marker, input_end)
+                output_idx = body_low.find(output_marker, output_end)
 
             return zip(inputs, outputs)
 
@@ -466,174 +463,3 @@ class Scraper:
                     break
 
         return questions
-
-
-CONTEST_URI_HELP = f'''
-Uri format should be: <platform-prefix>::<contest-name>
-Contest Prefixes Supported: {pformat(Platforms.PREFIX)}
-Eg:
-\tCodeforces: cf::1382
-\tCodechef: cc::JUNE20A
-'''
-
-CONTEST_FILES_DIR = 'ContestFiles'
-
-
-def readable_dir(path):
-    error = TypeError(f'readable_dir:{path} is not a valid dir')
-
-    if path == CONTEST_FILES_DIR and not os.path.exists(path):
-        os.mkdir(CONTEST_FILES_DIR)
-
-    if not os.path.isdir(path):
-        raise error
-    if os.access(path, os.R_OK):
-        return path
-    else:
-        raise error
-
-
-def readable_file(path):
-    error = TypeError(f'readable_file:{path} is not a valid file')
-
-    if not os.path.isfile(path):
-        raise error
-    if os.access(path, os.R_OK):
-        return os.path.abspath(path)
-    else:
-        raise error
-
-
-def contest_uri(uri):
-    return Platforms.parse(uri)
-
-
-if __name__ == '__main__':
-    parser = ArgumentParser(description='Competitive Programming Helper')
-    parser.add_argument(
-        '-t', '--template',
-        action='store',
-        type=readable_file,
-        default='Template.cpp',
-        required=False,
-        help='Competitive programming template file',
-    )
-
-    parser.add_argument(
-        '-p', '--path',
-        action='store',
-        type=readable_dir,
-        default=CONTEST_FILES_DIR,
-        required=False,
-        help='Path of the dir where all input/output files are saved'
-    )
-
-    parser.add_argument(
-        '-c', '--contest',
-        action='store',
-        type=contest_uri,
-        required=True,
-        help=CONTEST_URI_HELP
-    )
-
-    sub_parsers = parser.add_subparsers(dest='command')
-    download_parser = sub_parsers.add_parser('download')
-    run_parser = sub_parsers.add_parser('run')
-    run_parser.add_argument(
-        'question',
-        action='store',
-        type=str,
-        help='Substring representing Question Name or 1 based index'
-    )
-    run_parser.add_argument(
-        '-s', '--solution-file',
-        action='store',
-        type=readable_file,
-        required=False,
-        help='Path of the program file (different from default file)'
-    )
-
-    show_parser = sub_parsers.add_parser('show')
-    show_parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        required=False,
-        default=False,
-        help='If True show all test cases (default=False)'
-    )
-    show_parser.add_argument(
-        '-q', '--question',
-        action='store',
-        required=False,
-        help='Shows only test cases of the provided question'
-    )
-
-    testcase = sub_parsers.add_parser('testcase')
-    testcase.add_argument(
-        '-q', '--question',
-        action='store',
-        required=True,
-        help='Substring representing Question Name or 1 based index'
-    )
-    testcase_group = testcase.add_mutually_exclusive_group()
-    testcase_group.add_argument(
-        '-a', '--add',
-        action='store_true',
-        required=False,
-        default=False,
-        help='Add a new custom test case'
-    )
-    testcase_group.add_argument(
-        '-d', '--delete',
-        action='store',
-        required=False,
-        help='Add a new custom test case'
-    )
-
-    args = parser.parse_args()
-
-    scraper = Scraper(args.contest[0], args.contest[1], args.template, args.path)
-    scraper.load_questions(force_download=(args.command == 'download'))
-
-    if args.command == 'run':
-        scraper.run_test_cases(args.question, args.solution_file)
-    elif args.command == 'show':
-        if args.question:
-            question = scraper.get_question(args.question)
-
-            if not question:
-                print('Invalid question entered. Following are available:')
-                scraper.show_all_questions()
-            else:
-                print(question)
-                for tst in question.test_cases:
-                    print(tst)
-
-        else:
-            scraper.show_all_questions(verbose=args.verbose)
-
-    elif args.command == 'testcase':
-        question = scraper.get_question(args.question)
-
-        if not question:
-            print('Invalid question entered. Following are available:')
-            scraper.show_all_questions()
-        else:
-            print(f'Selected: {question.title}')
-            if args.add:
-                print(f'Enter Sample Input:  (leave empty line to submit)')
-                sample_input = multiline_input()
-                print(f'Enter Sample Output:  (leave empty line to submit)')
-                sample_output = multiline_input()
-
-                question.add_test(sample_input, sample_output, custom_testcase=True)
-                scraper.save_questions()
-            elif args.delete:
-                test = question.remove_test(args.delete)
-                if test is not None:
-                    print(f'Deleted {test}')
-                    scraper.save_questions()
-                else:
-                    print(f'[#] No valid test with idx={args.delete} found ❗')
-            else:
-                print('[#] No option chosen ❗')

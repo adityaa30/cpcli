@@ -1,32 +1,47 @@
 import inspect
-from abc import ABC, abstractmethod
-from argparse import ArgumentParser
-from typing import Dict
+from argparse import ArgumentParser, Namespace
+from contextlib import suppress
+from typing import Dict, Optional
 
+from zope.interface import Interface, implementer
+from zope.interface.exceptions import Invalid, MultipleInvalid
+from zope.interface.verify import verifyClass
+
+from cpcli.cli import Scraper
 from cpcli.utils.cmdtypes import readable_dir, readable_file, contest_uri
 from cpcli.utils.constants import DEFAULT_CONTEST_FILES_DIR, CONTEST_URI_HELP
 from cpcli.utils.misc import walk_modules
 
 
-class BaseCommand(ABC):
+class ICommand(Interface):
+    def add_options(parser: ArgumentParser) -> None:
+        pass
 
-    def __init__(self):
-        self.subcommands: Dict[str, BaseCommand] = {}
-        for cmd in self.iter_subcommands():
-            cmdname = cmd.__module__.split('.')[-1]
-            self.subcommands[cmdname] = cmd()
+    def run(args: Namespace, scraper: Scraper) -> None:
+        pass
 
-    @classmethod
-    def iter_subcommands(cls):
-        for module in walk_modules('cpcli.commands'):
-            for obj in vars(module).values():
+
+def iter_subcommands(cls):
+    for module in walk_modules('cpcli.commands'):
+        for obj in vars(module).values():
+            with suppress(Invalid, MultipleInvalid):
                 if (
                         inspect.isclass(obj)
-                        and issubclass(obj, cls)
+                        and verifyClass(ICommand, obj)
                         and obj.__module__ == module.__name__
                         and not obj == cls
                 ):
                     yield obj
+
+
+@implementer(ICommand)
+class BaseCommand:
+
+    def __init__(self):
+        self.subcommands: Dict[str, BaseCommand] = {}
+        for cmd in iter_subcommands(BaseCommand):
+            cmdname = cmd.__module__.split('.')[-1]
+            self.subcommands[cmdname] = cmd()
 
     @classmethod
     def from_parser(cls, parser: ArgumentParser):
@@ -68,13 +83,16 @@ class BaseCommand(ABC):
             subcmd_parser = sub_parsers.add_parser(name)
             subcmd.add_options(subcmd_parser)
 
-    def process_arguments(self, args) -> None:
-        """Takes in all the arguments passed to the cli.
-        Preprocesses/Precomputes anything based on the arguments passed
-        """
-        pass
+    def load_scraper(self, args) -> Scraper:
+        return Scraper(
+            platform=args.contest_uri[0],
+            contest=args.contest_uri[1],
+            template=args.template,
+            root_dir=args.path
+        )
 
-    @abstractmethod
-    def run(self, args) -> None:
-        """Entry point for running commands"""
-        raise NotImplementedError
+    def run(self, args: Namespace, scraper: Optional[Scraper] = None) -> None:
+        scraper = self.load_scraper(args)
+        scraper.load_questions()
+        if args.command:
+            self.subcommands[args.command].run(args, scraper)

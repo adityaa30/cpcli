@@ -11,5 +11,5 @@ class DownloadCommand:
     def add_options(self, parser: ArgumentParser) -> None:
         pass
 
-    def run(self, args: Namespace, scraper: Scraper) -> None:
+    def run(self, _: Namespace, scraper: Scraper) -> None:
         scraper.load_questions(force_download=True)

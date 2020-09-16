@@ -33,7 +33,7 @@ jobs:
       - name: Upgrade pip to latest version
         run: python -m pip install --upgrade pip
       - name: Install tox
-        run: pip install tox
+        run: pip install -U tox twine wheel codecov
       - run: tox -e ${{ matrix.environment }}
 
   codequality:
@@ -55,5 +55,5 @@ jobs:
       - name: Upgrade pip to latest version
         run: python -m pip install --upgrade pip
       - name: Install tox
-        run: pip install tox
+        run: pip install -U tox twine wheel codecov
       - run: tox -e ${{ matrix.environment }}

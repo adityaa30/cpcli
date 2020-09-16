@@ -12,21 +12,10 @@ from lxml.html import document_fromstring
 WHITE_SPACES = string.whitespace
 
 
-def multiline_input() -> str:
-    lines = []
-    while True:
-        line = input()
-        if line:
-            lines.append(line)
-        else:
-            break
-    return '\n'.join(lines)
-
-
-def compare(s1: str, s2: str) -> bool:
+def compare(s_1: str, s_2: str) -> bool:
     remove = string.whitespace
     translation = str.maketrans(dict.fromkeys(remove))
-    return s1.translate(translation) == s2.translate(translation)
+    return s_1.translate(translation) == s_2.translate(translation)
 
 
 class InvalidContestURI(TypeError):
@@ -75,7 +64,7 @@ class TestCase:
         test_process = Popen(
             [executable_path],
             stdout=PIPE, stdin=PIPE, stderr=PIPE,
-            text=True, encoding='utf-8'
+            encoding='utf-8'
         )
         try:
             output, err = test_process.communicate(self.sample_input, timeout=self.question.time_limit)
@@ -319,8 +308,8 @@ class Scraper:
             return
 
         self.questions = []
-        with open(self.metadata_path, 'r') as f:
-            metadata = json.load(f)
+        with open(self.metadata_path, 'r') as file:
+            metadata = json.load(file)
 
         for question in metadata['questions']:
             self.questions.append(Question.from_dict(question))
@@ -382,25 +371,25 @@ class Scraper:
                 os.rename(template_named_file, question.path)
 
         # Save/Update the metadata
-        with open(self.metadata_path, 'w') as f:
-            json.dump(self.metadata, f, indent=2)
+        with open(self.metadata_path, 'w') as file:
+            json.dump(self.metadata, file, indent=2)
 
         print(f'Saved in {os.path.abspath(self.base_dir)}')
 
     def get_questions_codechef(self) -> List[Question]:
         print(f'Downloading page https://www.codechef.com/{self.contest}')
 
-        conn = HTTPSConnection('www.codechef.com')
+        url = 'www.codechef.com'
+        conn = HTTPSConnection(url)
         conn.request('GET', f'/api/contests/{self.contest}')
         response = conn.getresponse()
+        conn.close()
 
         if response.getcode() != 200:
             err = Exception(f'No contest found for codechef/{self.contest} ❌❌')
-            conn.close()
             raise err
 
         data = json.loads(response.read().decode())
-        conn.close()
         questions: List[Question] = []
 
         caption = data['name']

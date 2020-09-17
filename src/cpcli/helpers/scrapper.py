@@ -8,15 +8,16 @@ from lxml.html import document_fromstring
 
 from cpcli.helpers.question import Question
 from cpcli.platforms import Platforms
+from cpcli.utils.config import CpCliConfig
 
 
 class Scraper:
-    def __init__(self, platform: str, contest: str, template: str, root_dir: str) -> None:
+    def __init__(self, platform: str, contest: str, template: str, config: CpCliConfig) -> None:
         self.platform = platform
         self.contest = contest
 
-        self.root_dir = os.path.abspath(root_dir)
-        self.base_dir = Platforms.get_dir_path(self.root_dir, platform, contest)
+        self.config = config
+        self.base_dir = Platforms.get_dir_path(self.config.contest_files_dir, platform, contest)
         self.metadata_path = os.path.join(self.base_dir, '.metadata.json')
 
         self.template = template

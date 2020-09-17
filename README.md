@@ -29,19 +29,19 @@ cpcli --help
 ```
 
 ```text
-usage: cpcli [-h] [-t TEMPLATE] [-p PATH] -c CONTEST {download,run,show} ...
+usage: cpcli [-h] [-t TEMPLATE] [-c CONTEST_URI]
+             {download,init,run,show,testcase} ...
 
 Competitive Programming Helper
 
 positional arguments:
-  {download,run,show}
+  {download,init,run,show,testcase}
 
 optional arguments:
   -h, --help            show this help message and exit
   -t TEMPLATE, --template TEMPLATE
                         Competitive programming template file
-  -p PATH, --path PATH  Path of the dir where all input/output files are saved
-  -c CONTEST, --contest CONTEST
+  -c CONTEST_URI, --contest-uri CONTEST_URI
                         Uri format should be: <platform-prefix>::<contest-name>
                         Contest Prefixes Supported: {'cc': 'Codechef', 'cf': 'Codeforces'}
                         Eg:
@@ -53,6 +53,31 @@ optional arguments:
 For example to download **Codeforces Round #661 (Div. 3)** sample test cases, create a URI using the contest id.
 For the above contest - Link is **https://codeforces.com/contest/1399/**
 Contest ID is 1399 -> URI would become `cf::1399`
+
+### `init`
+
+```text
+usage: cpcli init [-h] [-p PROJECT_PATH] ProjectName
+
+positional arguments:
+  ProjectName           Name of the cp-cli project where all the files are
+                        stored. In case, you want to keep your current
+                        directory as project root - Specify the name as '.'
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PROJECT_PATH, --project-path PROJECT_PATH
+                        Path to the project directory, if not specified it is
+                        taken as ./<project-name>
+```
+
+```bash
+# Declare the current directory as cpcli project
+cpcli init .
+
+# Create a new directory with project name
+cpcli init <project-name> 
+```
 
 ### `download`
 

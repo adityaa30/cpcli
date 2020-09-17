@@ -1,5 +1,5 @@
 import inspect
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, ArgumentError, Namespace
 from contextlib import suppress
 from typing import Dict, Optional
 
@@ -8,8 +8,9 @@ from zope.interface.exceptions import Invalid, MultipleInvalid
 from zope.interface.verify import verifyClass
 
 from cpcli.cli import Scraper
-from cpcli.utils.cmdtypes import readable_dir, readable_file, contest_uri
-from cpcli.utils.constants import DEFAULT_CONTEST_FILES_DIR, CONTEST_URI_HELP
+from cpcli.utils.cmdtypes import readable_file, contest_uri
+from cpcli.utils.config import CpCliConfig
+from cpcli.utils.constants import CONTEST_URI_HELP
 from cpcli.utils.misc import walk_modules
 
 
@@ -43,6 +44,8 @@ class BaseCommand:
             cmdname = cmd.__module__.split('.')[-1]
             self.subcommands[cmdname] = cmd()
 
+        self.config = CpCliConfig()
+
     @classmethod
     def from_parser(cls, parser: ArgumentParser):
         obj = cls()
@@ -61,19 +64,10 @@ class BaseCommand:
         )
 
         parser.add_argument(
-            '-p', '--path',
-            action='store',
-            type=readable_dir,
-            default=DEFAULT_CONTEST_FILES_DIR,
-            required=False,
-            help='Path of the dir where all input/output files are saved'
-        )
-
-        parser.add_argument(
             '-c', '--contest-uri',
             action='store',
             type=contest_uri,
-            required=True,
+            required=False,
             help=CONTEST_URI_HELP
         )
 
@@ -84,15 +78,20 @@ class BaseCommand:
             subcmd.add_options(subcmd_parser)
 
     def load_scraper(self, args) -> Scraper:
+        if not args.contest_uri:
+            raise ArgumentError(None, 'the following arguments are required: -c/--contest-uri')
+
         return Scraper(
             platform=args.contest_uri[0],
             contest=args.contest_uri[1],
             template=args.template,
-            root_dir=args.path
+            config=self.config
         )
 
     def run(self, args: Namespace, scraper: Optional[Scraper] = None) -> None:
-        scraper = self.load_scraper(args)
-        scraper.load_questions()
+        if args.command != 'init':
+            scraper = self.load_scraper(args)
+            scraper.load_questions()
+
         if args.command:
             self.subcommands[args.command].run(args, scraper)

@@ -7,7 +7,7 @@ from os.path import abspath, exists, join
 from zope.interface import implementer
 
 from cpcli.commands import ICommand
-from cpcli.scrapper import Scraper
+from cpcli.runner import Scraper
 from cpcli.utils.cmdtypes import readable_dir
 from cpcli.utils.constants import CONFIG_FILE_NAME
 

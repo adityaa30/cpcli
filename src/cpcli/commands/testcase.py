@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from zope.interface import implementer
 
 from cpcli.commands import ICommand
-from cpcli.scrapper import Scraper
+from cpcli.runner import Scraper
 from cpcli.utils.python import multiline_input
 
 

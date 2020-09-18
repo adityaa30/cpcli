@@ -1,11 +1,9 @@
-import string
 import math
 import os
 from typing import Dict, List, Optional
 
 from cpcli.testcase import TestCase
-
-WHITE_SPACES = string.whitespace
+from cpcli.utils.constants import WHITE_SPACES
 
 
 class Question:

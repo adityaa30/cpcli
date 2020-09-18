@@ -1,10 +1,8 @@
-import string
 from subprocess import Popen, PIPE, TimeoutExpired
 from typing import Dict
 
+from cpcli.utils.constants import WHITE_SPACES
 from cpcli.utils.python import compare
-
-WHITE_SPACES = string.whitespace
 
 
 class TestCase:

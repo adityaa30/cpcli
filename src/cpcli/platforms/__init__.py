@@ -1,7 +1,7 @@
 import os
 
 from typing import Tuple
-from cpcli.helpers.invalidcontesturi import InvalidContestURI
+from cpcli.utils.exceptions import InvalidContestURI
 
 
 class Platforms:

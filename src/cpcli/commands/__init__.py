@@ -7,7 +7,7 @@ from zope.interface import Interface, implementer
 from zope.interface.exceptions import Invalid, MultipleInvalid
 from zope.interface.verify import verifyClass
 
-from cpcli.helpers.scrapper import Scraper
+from cpcli.scrapper import Scraper
 from cpcli.utils.cmdtypes import readable_file, contest_uri
 from cpcli.utils.config import CpCliConfig
 from cpcli.utils.constants import CONTEST_URI_HELP

@@ -6,7 +6,7 @@ from typing import Optional, List, Dict
 from http.client import HTTPSConnection
 from lxml.html import document_fromstring
 
-from cpcli.helpers.question import Question
+from cpcli.question import Question
 from cpcli.platforms import Platforms
 from cpcli.utils.config import CpCliConfig
 

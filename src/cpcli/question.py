@@ -3,7 +3,7 @@ import math
 import os
 from typing import Dict, List, Optional
 
-from cpcli.helpers.testcase import TestCase
+from cpcli.testcase import TestCase
 
 WHITE_SPACES = string.whitespace
 

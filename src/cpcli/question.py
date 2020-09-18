@@ -7,15 +7,12 @@ from cpcli.utils.constants import WHITE_SPACES
 
 
 class Question:
-    def __init__(self, idx: int, title: str, base_dir: str, time_limit: int = 5) -> None:
+    def __init__(self, idx: int, title: str, base_dir: str, time_limit: str = str(5)) -> None:
         self.idx = idx
         self.title = self.kebab_case(title)
         self.base_dir = base_dir
 
-        try:
-            self.time_limit = math.ceil(float(time_limit))
-        except ValueError:
-            self.time_limit = 5
+        self.time_limit = time_limit
 
         self.test_cases: List[TestCase] = []
 

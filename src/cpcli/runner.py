@@ -144,7 +144,7 @@ class Scraper:
         for idx, problem in enumerate(problems):
             title = problem.find_class("title")[0].text_content()
             time_limit = problem.find_class("time-limit")[0].text_content()
-            time_limit = int(time_limit[len('time limit per test'):].split(' ')[0])
+            time_limit = time_limit[len('time limit per test'):].split(' ')[0].split('.')[0]
 
             question = Question(idx, title, self.base_dir, time_limit)
 

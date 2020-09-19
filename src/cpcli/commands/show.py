@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from zope.interface import implementer
 
 from cpcli.commands import ICommand
-from cpcli.runner import Scraper
+from cpcli.runner import Runner
 
 
 @implementer(ICommand)
@@ -23,7 +23,7 @@ class ShowCommand:
             help='Shows only test cases of the provided question'
         )
 
-    def run(self, args: Namespace, scraper: Scraper) -> None:
+    def run(self, args: Namespace, scraper: Runner) -> None:
         if args.question:
             question = scraper.get_question(args.question)
 

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from zope.interface import implementer
 
 from cpcli.commands import ICommand
-from cpcli.runner import Scraper
+from cpcli.runner import Runner
 from cpcli.utils.cmdtypes import readable_file
 
 
@@ -24,5 +24,5 @@ class RunCommand:
             help='Path of the program file (different from default file)'
         )
 
-    def run(self, args: Namespace, scraper: Scraper) -> None:
+    def run(self, args: Namespace, scraper: Runner) -> None:
         scraper.run_test_cases(args.question, args.solution_file)

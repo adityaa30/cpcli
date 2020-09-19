@@ -1,17 +1,18 @@
 import json
 import os
 import shutil
+from http.client import HTTPSConnection
 from subprocess import Popen, PIPE
 from typing import Optional, List, Dict
-from http.client import HTTPSConnection
+
 from lxml.html import document_fromstring
 
-from cpcli.question import Question
 from cpcli.platforms import Platforms
+from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
 
 
-class Scraper:
+class Runner:
     def __init__(self, platform: str, contest: str, template: str, config: CpCliConfig) -> None:
         self.platform = platform
         self.contest = contest
@@ -144,9 +145,12 @@ class Scraper:
         for idx, problem in enumerate(problems):
             title = problem.find_class("title")[0].text_content()
             time_limit = problem.find_class("time-limit")[0].text_content()
-            time_limit = time_limit[len('time limit per test'):].split(' ')[0].split('.')[0]
 
-            question = Question(idx, title, self.base_dir, time_limit)
+            time_limit = time_limit[len('time limit per test'):].split(' ')[0]
+            try:
+                question = Question(idx, title, self.base_dir, float(time_limit))
+            except ValueError:
+                question = Question(idx, title, self.base_dir, 5.0)
 
             sample_tests = problem.find_class("sample-test")[0]
             inputs = sample_tests.find_class('input')
@@ -186,18 +190,18 @@ class Scraper:
         conn = HTTPSConnection(url)
         conn.request('GET', f'/api/contests/{self.contest}')
         response = conn.getresponse()
+        body = response.read().decode()
         conn.close()
 
         if response.getcode() != 200:
             err = Exception(f'No contest found for codechef/{self.contest} ❌❌')
             raise err
 
-        data = json.loads(response.read().decode())
+        data = json.loads(body)
         questions: List[Question] = []
 
-        caption = data['name']
+        caption, problems = data['name'], list(data['problems'].keys())
         print(f'Found: {caption} ✅', 'Scraping problems:\n', sep='\n')
-        problems = list(data['problems'].keys())
 
         def scrape_test_case(input_marker: str, output_marker: str, body: str):
             body_low = body.lower()

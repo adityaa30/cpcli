@@ -7,7 +7,7 @@ from os.path import abspath, exists, join
 from zope.interface import implementer
 
 from cpcli.commands import ICommand
-from cpcli.runner import Scraper
+from cpcli.runner import Runner
 from cpcli.utils.cmdtypes import readable_dir
 from cpcli.utils.constants import CONFIG_FILE_NAME
 
@@ -54,7 +54,7 @@ class InitCommand:
             return True
         return False
 
-    def run(self, args: Namespace, __: Scraper) -> None:
+    def run(self, args: Namespace, __: Runner) -> None:
         project_name = args.ProjectName
         project_dir = args.project_path or project_name
 

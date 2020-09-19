@@ -6,7 +6,7 @@ from cpcli.utils.constants import WHITE_SPACES
 
 
 class Question:
-    def __init__(self, idx: int, title: str, base_dir: str, time_limit: str = str(5)) -> None:
+    def __init__(self, idx: int, title: str, base_dir: str, time_limit: float = 5.0) -> None:
         self.idx = idx
         self.title = self.kebab_case(title)
         self.base_dir = base_dir

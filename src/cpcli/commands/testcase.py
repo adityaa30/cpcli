@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from zope.interface import implementer
 
 from cpcli.commands import ICommand
-from cpcli.runner import Scraper
+from cpcli.runner import Runner
 from cpcli.utils.python import multiline_input
 
 
@@ -31,7 +31,7 @@ class TestCaseCommand:
             help='Add a new custom test case'
         )
 
-    def run(self, args: Namespace, scraper: Scraper) -> None:
+    def run(self, args: Namespace, scraper: Runner) -> None:
         question = scraper.get_question(args.question)
 
         if not question:

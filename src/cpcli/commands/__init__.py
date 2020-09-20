@@ -7,7 +7,7 @@ from zope.interface import Interface, implementer
 from zope.interface.exceptions import Invalid, MultipleInvalid
 from zope.interface.verify import verifyClass
 
-from cpcli.cli import Scraper
+from cpcli.runner import Runner
 from cpcli.utils.cmdtypes import readable_file, contest_uri
 from cpcli.utils.config import CpCliConfig
 from cpcli.utils.constants import CONTEST_URI_HELP
@@ -18,7 +18,7 @@ class ICommand(Interface):
     def add_options(parser: ArgumentParser) -> None:
         pass
 
-    def run(args: Namespace, scraper: Scraper) -> None:
+    def run(args: Namespace, runner: Runner) -> None:
         pass
 
 
@@ -77,21 +77,21 @@ class BaseCommand:
             subcmd_parser = sub_parsers.add_parser(name)
             subcmd.add_options(subcmd_parser)
 
-    def load_scraper(self, args) -> Scraper:
+    def load_runner(self, args) -> Runner:
         if not args.contest_uri:
             raise ArgumentError(None, 'the following arguments are required: -c/--contest-uri')
 
-        return Scraper(
+        return Runner(
             platform=args.contest_uri[0],
             contest=args.contest_uri[1],
             template=args.template,
             config=self.config
         )
 
-    def run(self, args: Namespace, scraper: Optional[Scraper] = None) -> None:
+    def run(self, args: Namespace, runner: Optional[Runner] = None) -> None:
         if args.command != 'init':
-            scraper = self.load_scraper(args)
-            scraper.load_questions()
+            runner = self.load_runner(args)
+            runner.load_questions()
 
         if args.command:
-            self.subcommands[args.command].run(args, scraper)
+            self.subcommands[args.command].run(args, runner)

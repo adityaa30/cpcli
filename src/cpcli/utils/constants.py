@@ -1,3 +1,5 @@
+import string
+
 CONFIG_FILE_NAME = 'cpcli.ini'
 
 CONTEST_URI_HELP = '''
@@ -8,3 +10,4 @@ Contest Prefixes Supported (example):
 '''
 
 DEFAULT_CONTEST_FILES_DIR = 'ContestFiles'
+WHITE_SPACES = string.whitespace

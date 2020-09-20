@@ -1,6 +1,6 @@
 import os
 
-from cpcli.cli import Platforms
+from cpcli.platforms import Platforms
 from cpcli.utils.constants import DEFAULT_CONTEST_FILES_DIR
 
 

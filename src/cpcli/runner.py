@@ -1,215 +1,18 @@
 import json
 import os
 import shutil
-import string
 from http.client import HTTPSConnection
-from subprocess import Popen, PIPE, TimeoutExpired
-from typing import Dict, Tuple, List, Optional
+from subprocess import Popen, PIPE
+from typing import Optional, List, Dict
 
-import math
 from lxml.html import document_fromstring
 
+from cpcli.platforms import Platforms
+from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
 
-WHITE_SPACES = string.whitespace
 
-
-def compare(s_1: str, s_2: str) -> bool:
-    remove = string.whitespace
-    translation = str.maketrans(dict.fromkeys(remove))
-    return s_1.translate(translation) == s_2.translate(translation)
-
-
-class InvalidContestURI(TypeError):
-    def __init__(self, uri: str) -> None:
-        self.uri = uri
-
-    def __str__(self):
-        return f'InvalidContestURI: {self.uri} is not a valid contest uri'
-
-
-class TestCase:
-    def __init__(
-            self, idx: int,
-            sample_input: str, sample_output: str,
-            question,
-            custom_testcase: bool = False
-    ) -> None:
-        self.idx = idx
-        self.sample_input = sample_input.strip(WHITE_SPACES)
-        self.sample_output = sample_output.strip(WHITE_SPACES)
-        self.question = question
-        self.custom_testcase = custom_testcase
-
-    @classmethod
-    def from_dict(cls, metadata: Dict, question):
-        return cls(
-            idx=metadata['idx'],
-            sample_input=metadata['sample_input'],
-            sample_output=metadata['sample_output'],
-            question=question,
-            custom_testcase=metadata['custom_testcase']
-        )
-
-    def to_dict(self) -> Dict:
-        return {
-            'idx': self.idx,
-            'sample_input': self.sample_input,
-            'sample_output': self.sample_output,
-            'custom_testcase': self.custom_testcase
-        }
-
-    def check_output(self, program_output) -> bool:
-        return program_output == self.sample_output
-
-    def execute(self, executable_path: str) -> None:
-        test_process = Popen(
-            [executable_path],
-            stdout=PIPE, stdin=PIPE, stderr=PIPE,
-            encoding='utf-8'
-        )
-        try:
-            output, err = test_process.communicate(self.sample_input, timeout=self.question.time_limit)
-            if test_process.returncode == 0:
-                if compare(output, self.sample_output):
-                    message = '✅'
-                else:
-                    message = (
-                        f'❌ (WA)\n'
-                        f'Sample Input:\n{self.sample_input}\n\n'
-                        f'Sample Output:\n{self.sample_output}\n\n'
-                        f'Your Output:\n{output}\n\n'
-                    )
-            else:
-                message = f'❌\n{err}'
-        except TimeoutExpired:
-            message = f'❌ (TLE) [>{self.question.time_limit} sec]'
-        finally:
-            print(f'[#] {"Custom" if self.custom_testcase else "Sample"} Test Case {self.idx + 1}: {message}')
-
-    def __str__(self) -> str:
-        return (
-            f'Test Case: {self.idx + 1}\n'
-            f'Input\n'
-            f'{self.sample_input}\n\n'
-            f'Output\n'
-            f'{self.sample_output}\n\n'
-        )
-
-    __repr__ = __str__
-
-
-class Question:
-    def __init__(self, idx: int, title: str, base_dir: str, time_limit: int = 5) -> None:
-        self.idx = idx
-        self.title = self.kebab_case(title)
-        self.base_dir = base_dir
-
-        try:
-            self.time_limit = math.ceil(float(time_limit))
-        except ValueError:
-            self.time_limit = 5
-
-        self.test_cases: List[TestCase] = []
-
-    @property
-    def path(self) -> str:
-        return os.path.abspath(os.path.join(self.base_dir, f'{self.title}.cpp'))
-
-    @staticmethod
-    def kebab_case(val: str) -> str:
-        words = [
-            ''.join(c for c in word.strip(WHITE_SPACES) if c.isalnum() or c == '-')
-            for word in val.strip(WHITE_SPACES).split(' ')
-        ]
-        return '-'.join(words)
-
-    @classmethod
-    def from_dict(cls, metadata: Dict):
-        obj = cls(
-            idx=metadata['idx'],
-            title=metadata['title'],
-            base_dir=metadata['base_dir'],
-            time_limit=metadata.get('time_limit', 5)
-        )
-        for test in metadata['test_cases']:
-            obj.test_cases.append(TestCase.from_dict(test, obj))
-        return obj
-
-    def to_dict(self) -> Dict:
-        return {
-            'idx': self.idx,
-            'title': self.title,
-            'base_dir': self.base_dir,
-            'time_limit': self.time_limit,
-            'test_cases': [test.to_dict() for test in self.test_cases]
-        }
-
-    def add_test(self, sample_input: str, sample_output: str, custom_testcase: bool = False) -> None:
-        test_case = TestCase(
-            idx=len(self.test_cases),
-            sample_input=sample_input.strip(WHITE_SPACES),
-            sample_output=sample_output.strip(WHITE_SPACES),
-            question=self,
-            custom_testcase=custom_testcase
-        )
-        self.test_cases.append(test_case)
-
-    def remove_test(self, idx: int) -> Optional[TestCase]:
-        idx = int(idx)
-        to_remove = None
-        for testcase in self.test_cases:
-            if to_remove is not None:
-                testcase.idx -= 1
-            elif testcase.idx == idx:
-                to_remove = testcase
-
-        if to_remove:
-            self.test_cases.remove(to_remove)
-        return to_remove
-
-    def __str__(self) -> str:
-        return f'Question {self.idx + 1}: {self.title} [⏰ {self.time_limit} sec] [{len(self.test_cases)} Samples]'
-
-    __repr__ = __str__
-
-
-class Platforms:
-    PREFIX = {
-        'cf': 'Codeforces',
-        'cc': 'Codechef',
-    }
-
-    @classmethod
-    def get_link(cls, platform: str, contest: str) -> str:
-        if platform == 'cc':
-            return f'https://www.codechef.com/{contest}'
-        elif platform == 'cf':
-            return f'https://codeforces.com/contest/{contest}'
-
-        raise TypeError(f"Invalid platform. Choose one of {cls.PREFIX.keys()!r}")
-
-    @classmethod
-    def get_dir_path(cls, root_dir: str, platform: str, contest: str) -> str:
-        if platform not in cls.PREFIX:
-            raise TypeError(f"Invalid platform. Choose one of {cls.PREFIX.keys()!r}")
-
-        return os.path.join(root_dir, f'{cls.PREFIX[platform]}-{contest}')
-
-    @classmethod
-    def parse(cls, uri: str) -> Tuple[str, str]:
-        idx = uri.find("::")
-        if idx == -1:
-            raise InvalidContestURI(uri)
-
-        platform, contest = uri[:idx], uri[idx + 2:]
-        if platform not in Platforms.PREFIX or not contest.isalnum():
-            raise InvalidContestURI(uri)
-
-        return platform, contest
-
-
-class Scraper:
+class Runner:
     def __init__(self, platform: str, contest: str, template: str, config: CpCliConfig) -> None:
         self.platform = platform
         self.contest = contest
@@ -342,9 +145,12 @@ class Scraper:
         for idx, problem in enumerate(problems):
             title = problem.find_class("title")[0].text_content()
             time_limit = problem.find_class("time-limit")[0].text_content()
-            time_limit = int(time_limit[len('time limit per test'):].split(' ')[0])
 
-            question = Question(idx, title, self.base_dir, time_limit)
+            time_limit = time_limit[len('time limit per test'):].split(' ')[0]
+            try:
+                question = Question(idx, title, self.base_dir, float(time_limit))
+            except ValueError:
+                question = Question(idx, title, self.base_dir, 5.0)
 
             sample_tests = problem.find_class("sample-test")[0]
             inputs = sample_tests.find_class('input')
@@ -384,18 +190,18 @@ class Scraper:
         conn = HTTPSConnection(url)
         conn.request('GET', f'/api/contests/{self.contest}')
         response = conn.getresponse()
+        body = response.read().decode()
         conn.close()
 
         if response.getcode() != 200:
             err = Exception(f'No contest found for codechef/{self.contest} ❌❌')
             raise err
 
-        data = json.loads(response.read().decode())
+        data = json.loads(body)
         questions: List[Question] = []
 
-        caption = data['name']
+        caption, problems = data['name'], list(data['problems'].keys())
         print(f'Found: {caption} ✅', 'Scraping problems:\n', sep='\n')
-        problems = list(data['problems'].keys())
 
         def scrape_test_case(input_marker: str, output_marker: str, body: str):
             body_low = body.lower()

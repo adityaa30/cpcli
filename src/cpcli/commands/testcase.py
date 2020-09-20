@@ -31,12 +31,12 @@ class TestCaseCommand:
             help='Add a new custom test case'
         )
 
-    def run(self, args: Namespace, scraper: Runner) -> None:
-        question = scraper.get_question(args.question)
+    def run(self, args: Namespace, runner: Runner) -> None:
+        question = runner.get_question(args.question)
 
         if not question:
             print('Invalid question entered. Following are available:')
-            scraper.show_all_questions()
+            runner.show_all_questions()
         else:
             print(f'Selected: {question.title}')
             if args.add:
@@ -46,12 +46,12 @@ class TestCaseCommand:
                 sample_output = multiline_input()
 
                 question.add_test(sample_input, sample_output, custom_testcase=True)
-                scraper.save_questions()
+                runner.save_questions()
             elif args.delete:
                 test = question.remove_test(args.delete)
                 if test is not None:
                     print(f'Deleted {test}')
-                    scraper.save_questions()
+                    runner.save_questions()
                 else:
                     print(f'[#] No valid test with idx={args.delete} found ❗')
             else:

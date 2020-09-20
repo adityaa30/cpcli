@@ -23,17 +23,17 @@ class ShowCommand:
             help='Shows only test cases of the provided question'
         )
 
-    def run(self, args: Namespace, scraper: Runner) -> None:
+    def run(self, args: Namespace, runner: Runner) -> None:
         if args.question:
-            question = scraper.get_question(args.question)
+            question = runner.get_question(args.question)
 
             if not question:
                 print('Invalid question entered. Following are available:')
-                scraper.show_all_questions()
+                runner.show_all_questions()
             else:
                 print(question)
                 for tst in question.test_cases:
                     print(tst)
 
         else:
-            scraper.show_all_questions(verbose=args.verbose)
+            runner.show_all_questions(verbose=args.verbose)

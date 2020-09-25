@@ -1,9 +1,12 @@
+import logging
 from argparse import ArgumentParser, Namespace
 
 from zope.interface import implementer
 
 from cpcli.commands import ICommand
 from cpcli.runner import Runner
+
+logger = logging.getLogger()
 
 
 @implementer(ICommand)
@@ -28,12 +31,12 @@ class ShowCommand:
             question = runner.get_question(args.question)
 
             if not question:
-                print('Invalid question entered. Following are available:')
+                logger.warning('Invalid question entered. Following are available:')
                 runner.show_all_questions()
             else:
-                print(question)
+                logger.info(question)
                 for tst in question.test_cases:
-                    print(tst)
+                    logger.info(tst)
 
         else:
             runner.show_all_questions(verbose=args.verbose)

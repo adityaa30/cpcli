@@ -1,6 +1,6 @@
 import os
-
 from typing import Tuple
+
 from cpcli.utils.exceptions import InvalidContestURI
 
 

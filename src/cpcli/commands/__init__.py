@@ -1,4 +1,5 @@
 import inspect
+import os
 from argparse import ArgumentParser, ArgumentError, Namespace
 from contextlib import suppress
 from typing import Dict, Optional
@@ -7,6 +8,7 @@ from zope.interface import Interface, implementer
 from zope.interface.exceptions import Invalid, MultipleInvalid
 from zope.interface.verify import verifyClass
 
+import cpcli
 from cpcli.runner import Runner
 from cpcli.utils.cmdtypes import readable_file, contest_uri
 from cpcli.utils.config import CpCliConfig
@@ -46,6 +48,10 @@ class BaseCommand:
 
         self.config = CpCliConfig()
 
+    @property
+    def templates_dir(self) -> str:
+        return os.path.join(cpcli.__path__[0], 'templates')  # type: ignore  # mypy issue #1422
+
     @classmethod
     def from_parser(cls, parser: ArgumentParser):
         obj = cls()
@@ -58,7 +64,7 @@ class BaseCommand:
             '-t', '--template',
             action='store',
             type=readable_file,
-            default='Template.cpp',
+            default=os.path.join(self.templates_dir, 'Template.cpp'),
             required=False,
             help='Competitive programming template file',
         )
@@ -91,7 +97,11 @@ class BaseCommand:
     def run(self, args: Namespace, runner: Optional[Runner] = None) -> None:
         if args.command != 'init':
             runner = self.load_runner(args)
-            runner.load_questions()
+
+            # BaseCommand downloads the cache at the first load
+            # We dont want to download questions again and again
+            if args.command != 'download':
+                runner.load_questions()
 
         if args.command:
             self.subcommands[args.command].run(args, runner)

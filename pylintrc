@@ -12,6 +12,7 @@ max-line-length=119
 disable=abstract-method,
         fixme,
         inherit-non-class,
+        logging-fstring-interpolation,
         missing-docstring,
         no-else-return,
         no-self-argument,

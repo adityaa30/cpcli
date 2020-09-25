@@ -1,3 +1,4 @@
+import logging
 import re
 from argparse import ArgumentParser, Namespace
 from importlib import import_module
@@ -10,6 +11,8 @@ from cpcli.commands import ICommand
 from cpcli.runner import Runner
 from cpcli.utils.cmdtypes import readable_dir
 from cpcli.utils.constants import CONFIG_FILE_NAME
+
+logger = logging.getLogger()
 
 
 @implementer(ICommand)
@@ -46,10 +49,12 @@ class InitCommand:
                 return False
 
         if not re.search(r'^[_a-zA-Z]\w*$', project_name):
-            print('Error: Project names must begin with a letter and contain'
-                  ' only\nletters, numbers and underscores')
+            logger.error(
+                'Project names must begin with a letter and contain '
+                'only\nletters, numbers and underscores'
+            )
         elif _module_exists(project_name):
-            print('Error: Module %r already exists' % project_name)
+            logger.error(f'Module {project_name} already exists')
         else:
             return True
         return False
@@ -64,7 +69,7 @@ class InitCommand:
         config_path = join(project_dir, CONFIG_FILE_NAME)
 
         if exists(config_path):
-            print(f'Error: {CONFIG_FILE_NAME} already exists in {project_dir}')
+            logger.error(f'{CONFIG_FILE_NAME} already exists in {project_dir}')
             return
 
         if project_name != '.' and not self._is_valid_project_name(project_name):
@@ -72,8 +77,8 @@ class InitCommand:
 
         if not exists(project_dir):
             makedirs(project_dir)
-            print(f'Created project directory: {project_name}')
+            logger.debug(f'Created project directory: {project_name}')
 
         with open(config_path, 'w') as file:
             file.write('')
-            print(f'Created config file {CONFIG_FILE_NAME}')
+            logger.debug(f'Created config file {CONFIG_FILE_NAME}')

@@ -1,4 +1,4 @@
-// https://github.com/adityaa30/cp-cli/blob/master/Template.cpp
+// https://github.com/adityaa30/cp-cli
 #include <bits/stdc++.h>
 #define var(x) #x, x
 #define int long long int

@@ -1,8 +1,11 @@
+import logging
 from subprocess import Popen, PIPE, TimeoutExpired
 from typing import Dict
 
 from cpcli.utils.constants import WHITE_SPACES
 from cpcli.utils.python import compare
+
+logger = logging.getLogger()
 
 
 class TestCase:
@@ -62,7 +65,7 @@ class TestCase:
         except TimeoutExpired:
             message = f'❌ (TLE) [>{self.question.time_limit} sec]'
         finally:
-            print(f'[#] {"Custom" if self.custom_testcase else "Sample"} Test Case {self.idx + 1}: {message}')
+            logger.info(f'{"Custom" if self.custom_testcase else "Sample"} Test Case {self.idx + 1}: {message}')
 
     def __str__(self) -> str:
         return (

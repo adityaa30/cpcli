@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shutil
 from http.client import HTTPSConnection
@@ -10,6 +11,8 @@ from lxml.html import document_fromstring
 from cpcli.platforms import Platforms
 from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
+
+logger = logging.getLogger()
 
 
 class Runner:
@@ -26,7 +29,7 @@ class Runner:
         self.questions: List[Question] = []
 
         if not os.path.exists(self.base_dir):
-            print(f'[#] Creating base directory: {self.base_dir}')
+            logger.debug(f'Creating base directory: {self.base_dir}')
             os.makedirs(self.base_dir)
 
     def to_dict(self) -> Dict:
@@ -55,25 +58,25 @@ class Runner:
 
     def show_all_questions(self, verbose: bool = False) -> None:
         for question in self.questions:
-            print(question)
+            logging.info(question)
             if verbose:
                 for test in question.test_cases:
-                    print(test)
+                    logging.info(test)
 
     def run_test_cases(self, val: str, file: Optional[str] = None) -> None:
         question = self.get_question(val)
 
         if not question:
-            print('Invalid question entered. Following are available:')
+            logger.warning('Invalid question entered. Following are available:')
             for question in self.questions:
-                print(f"[{question.idx}]\t{question.title}")
+                logger.warning(f"[{question.idx}]\t{question.title}")
             return
 
         if file and not os.path.exists(file):
-            print(f'"{file}" solution file do not exist')
+            logger.warning(f'"{file}" solution file do not exist')
             return
 
-        print(f'[#] Checking question: {question.title}')
+        logger.info(f'Checking question: {question.title}')
 
         # Store the executable file in question's directory
         compiled_executable = os.path.join(self.base_dir, 'program')
@@ -119,7 +122,7 @@ class Runner:
             self.questions.append(Question.from_dict(question))
 
     def get_questions_codeforces(self) -> List[Question]:
-        print(f'Downloading page https://codeforces.com/contest/{self.contest}/problems')
+        logger.info(f'Downloading page https://codeforces.com/contest/{self.contest}/problems')
 
         url = 'codeforces.com'
         conn = HTTPSConnection(url)
@@ -138,8 +141,8 @@ class Runner:
         doc = document_fromstring(html)
         caption = doc.xpath('//div[@class="caption"]/text()')[0]
 
-        print(f'Found: {caption} ✅')
-        print('Scraping problems:')
+        logger.info(f'Found: {caption} ✅')
+        logger.info('Scraping problems:')
 
         problems = doc.xpath('//div[@class="problem-statement"]')
         for idx, problem in enumerate(problems):
@@ -162,7 +165,7 @@ class Runner:
                 question.add_test(sample_input, sample_output)
 
             questions.append(question)
-            print(question)
+            logger.info(question)
 
         return questions
 
@@ -181,10 +184,10 @@ class Runner:
         with open(self.metadata_path, 'w') as file:
             json.dump(self.metadata, file, indent=2)
 
-        print(f'Saved in {os.path.abspath(self.base_dir)}')
+        logger.info(f'Saved in {os.path.abspath(self.base_dir)}')
 
     def get_questions_codechef(self) -> List[Question]:
-        print(f'Downloading page https://www.codechef.com/{self.contest}')
+        logger.info(f'Downloading page https://www.codechef.com/{self.contest}')
 
         url = 'www.codechef.com'
         conn = HTTPSConnection(url)
@@ -201,7 +204,7 @@ class Runner:
         questions: List[Question] = []
 
         caption, problems = data['name'], list(data['problems'].keys())
-        print(f'Found: {caption} ✅', 'Scraping problems:\n', sep='\n')
+        logger.info(f'Found: {caption} ✅', 'Scraping problems:\n', sep='\n')
 
         def scrape_test_case(input_marker: str, output_marker: str, body: str):
             body_low = body.lower()
@@ -254,7 +257,7 @@ class Runner:
                 if problem['status'] == 'success':
                     question = get_question(problem)
                     questions.append(question)
-                    print(question)
+                    logger.info(question)
                     idx += 1
                     break
 

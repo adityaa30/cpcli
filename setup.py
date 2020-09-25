@@ -6,7 +6,7 @@ install_requires = [
 ]
 
 setup(
-    name='cp-cli',
+    name='cpcli',
     version='0.1',
     description='Competitive Programming CLI',
     author='Aditya Kumar',
@@ -16,7 +16,7 @@ setup(
     entry_points={'console_scripts': ['cpcli=cpcli.cmdline:execute']},
     python_requires='>=3.6',
     install_requires=install_requires,
-    url='https://github.com/adityaa30/cp-cli',
+    url='https://github.com/adityaa30/cpcli',
     zip_safe=False,
     license='MIT License'
 )

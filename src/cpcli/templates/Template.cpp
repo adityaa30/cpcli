@@ -1,4 +1,4 @@
-// https://github.com/adityaa30/cp-cli
+// https://github.com/adityaa30/cpcli
 #include <bits/stdc++.h>
 #define var(x) #x, x
 #define int long long int

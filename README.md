@@ -1,16 +1,16 @@
 # Competitive Programming CLI
 
-![Commit](https://github.com/adityaa30/cp-cli/workflows/Check%20Commit/badge.svg)
-![Test](https://github.com/adityaa30/cp-cli/workflows/Test/badge.svg)
+![Commit](https://github.com/adityaa30/cpcli/workflows/Check%20Commit/badge.svg)
+![Test](https://github.com/adityaa30/cpcli/workflows/Test/badge.svg)
 
 ### Download Guide
 
 ```bash
 # Clone the repository
-git clone https://github.com/adityaa30/cp-cli
+git clone https://github.com/adityaa30/cpcli
 
 # Change directory to the cloned directory
-cd cp-cli
+cd cpcli
 
 # Install i
 pip install -e .
@@ -24,8 +24,8 @@ pip install -e .
 
 ## Documentation
 
-Documentation is available online at the [**Github Wiki**](https://github.com/adityaa30/cp-cli/wiki/Commands)
+Documentation is available online at the [**Github Wiki**](https://github.com/adityaa30/cpcli/wiki/Commands)
 
 ## Contributing
 
-See [**Developer's Guide**](https://github.com/adityaa30/cp-cli/wiki/Developer%27s-Guide) in the Wiki.
+See [**Developer's Guide**](https://github.com/adityaa30/cpcli/wiki/Developer%27s-Guide) in the Wiki.

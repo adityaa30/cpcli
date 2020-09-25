@@ -23,7 +23,7 @@ class InitCommand:
             action='store',
             type=str,
             help=(
-                "Name of the cp-cli project where all the files are stored."
+                "Name of the `cpcli` project where all the files are stored."
                 " In case, you want to keep your current directory"
                 " as project root - Specify the name as \'.\'"
             )

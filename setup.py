@@ -11,7 +11,7 @@ setup(
     description='Competitive Programming CLI',
     author='Aditya Kumar',
     author_email='k.aditya00@gmail.com',
-    long_description=open('README.md', 'r', encoding='utf-8').read(),
+    long_description=open('README.rst', 'r', encoding='utf-8').read(),
     package_dir={'': 'src'},
     entry_points={'console_scripts': ['cpcli=cpcli.cmdline:execute']},
     python_requires='>=3.6',

@@ -17,6 +17,16 @@ setup(
     python_requires='>=3.6',
     install_requires=install_requires,
     url='https://github.com/adityaa30/cpcli',
+    download_url='https://github.com/adityaa30/cpcli/releases/tag/0.1',
+    keywords=['CLI', 'Competitive Programming'],
     zip_safe=False,
-    license='MIT License'
+    license='MIT License',
+    classifiers=[
+        'Topic :: Education',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+    ],
 )

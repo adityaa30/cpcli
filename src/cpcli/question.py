@@ -1,17 +1,22 @@
 import os
 from typing import Dict, List, Optional
 
+import math
+
 from cpcli.testcase import TestCase
 from cpcli.utils.constants import WHITE_SPACES
 
 
 class Question:
-    def __init__(self, idx: int, title: str, base_dir: str, time_limit: float = 5.0) -> None:
+    def __init__(self, idx: int, title: str, base_dir: str, time_limit: str = '5') -> None:
         self.idx = idx
         self.title = self.kebab_case(title)
         self.base_dir = base_dir
 
-        self.time_limit = int(time_limit)
+        try:
+            self.time_limit = math.ceil(float(time_limit))
+        except ValueError:
+            self.time_limit = 5
 
         self.test_cases: List[TestCase] = []
 

@@ -45,10 +45,7 @@ class CodeForces(Platform):
             time_limit = problem.find_class("time-limit")[0].text_content()
 
             time_limit = time_limit[len('time limit per test'):].split(' ')[0]
-            try:
-                question = Question(idx, title, self.base_dir, float(time_limit))
-            except ValueError:
-                question = Question(idx, title, self.base_dir, 5.0)
+            question = Question(idx, title, self.base_dir, time_limit)
 
             sample_tests = problem.find_class("sample-test")[0]
             inputs = sample_tests.find_class('input')

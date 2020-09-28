@@ -1,6 +1,14 @@
 Competitive Programming CLI
 ===========================
 
+.. image:: https://img.shields.io/pypi/v/cpcli.svg
+   :target: https://pypi.python.org/pypi/cpcli
+   :alt: PyPI Version
+
+.. image:: https://img.shields.io/pypi/pyversions/cpcli.svg
+   :target: https://pypi.python.org/pypi/cpcli
+   :alt: Supported Python Versions
+
 |Commit| |Test|
 
 Download Guide

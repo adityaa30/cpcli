@@ -1,6 +1,5 @@
 import os
 
-from cpcli.platforms import Platforms
 from cpcli.utils.constants import DEFAULT_CONTEST_FILES_DIR
 
 
@@ -29,5 +28,7 @@ def readable_file(path):
         raise error
 
 
-def contest_uri(uri):
-    return Platforms.parse(uri)
+def valid_uri(uri: str) -> str:
+    """ToDo: URI will never have any spaces.
+    """
+    return uri

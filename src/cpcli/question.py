@@ -11,7 +11,7 @@ class Question:
         self.title = self.kebab_case(title)
         self.base_dir = base_dir
 
-        self.time_limit = time_limit
+        self.time_limit = int(time_limit)
 
         self.test_cases: List[TestCase] = []
 

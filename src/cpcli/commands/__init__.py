@@ -10,7 +10,7 @@ from zope.interface.verify import verifyClass
 
 import cpcli
 from cpcli.runner import Runner
-from cpcli.utils.cmdtypes import readable_file, contest_uri
+from cpcli.utils.cmdtypes import readable_file, valid_uri
 from cpcli.utils.config import CpCliConfig
 from cpcli.utils.constants import CONTEST_URI_HELP
 from cpcli.utils.misc import walk_modules
@@ -72,7 +72,7 @@ class BaseCommand:
         parser.add_argument(
             '-c', '--contest-uri',
             action='store',
-            type=contest_uri,
+            type=valid_uri,
             required=False,
             help=CONTEST_URI_HELP
         )
@@ -88,8 +88,7 @@ class BaseCommand:
             raise ArgumentError(None, 'the following arguments are required: -c/--contest-uri')
 
         return Runner(
-            platform=args.contest_uri[0],
-            contest=args.contest_uri[1],
+            uri=args.contest_uri,
             template=args.template,
             config=self.config
         )

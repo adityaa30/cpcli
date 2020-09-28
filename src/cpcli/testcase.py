@@ -48,6 +48,7 @@ class TestCase:
             stdout=PIPE, stdin=PIPE, stderr=PIPE,
             encoding='utf-8'
         )
+        message = ''
         try:
             output, err = test_process.communicate(self.sample_input, timeout=self.question.time_limit)
             if test_process.returncode == 0:

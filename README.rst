@@ -8,14 +8,7 @@ Download Guide
 
 .. code:: bash
 
-    # Clone the repository
-    git clone https://github.com/adityaa30/cpcli
-
-    # Change directory to the cloned directory
-    cd cpcli
-
-    # Install i
-    pip install -e .
+    pip install cpcli
 
 Requirements
 ~~~~~~~~~~~~

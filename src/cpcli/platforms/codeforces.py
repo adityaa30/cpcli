@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import List
 
@@ -23,17 +22,16 @@ class CodeForces(Platform):
         return 'cf'
 
     def get_questions(self) -> List[Question]:
-        logger.info(f'Downloading page {self.base_url}/{self.contest}')
+        logger.info(f'Downloading page {self.base_url}/contest/{self.contest}/problems')
 
         response_code, body = self.download_response(f"/contest/{self.contest}/problems")
         if response_code != 200:
             err = Exception(f'No contest found for codechef/{self.contest} ❌❌')
             raise err
 
-        data = json.loads(body)
         questions: List[Question] = []
 
-        doc = document_fromstring(data)
+        doc = document_fromstring(body)
         caption = doc.xpath('//div[@class="caption"]/text()')[0]
 
         logger.info(f'Found: {caption} ✅')

@@ -5,12 +5,14 @@ import math
 
 from cpcli.testcase import TestCase
 from cpcli.utils.constants import WHITE_SPACES
+from cpcli.utils.misc import kebab_case
 
 
 class Question:
     def __init__(self, idx: int, title: str, base_dir: str, time_limit: str = '5') -> None:
+        assert idx >= 1
         self.idx = idx
-        self.title = self.kebab_case(title)
+        self.title = kebab_case(title)
         self.base_dir = base_dir
 
         try:
@@ -23,14 +25,6 @@ class Question:
     @property
     def path(self) -> str:
         return os.path.abspath(os.path.join(self.base_dir, f'{self.title}.cpp'))
-
-    @staticmethod
-    def kebab_case(val: str) -> str:
-        words = [
-            ''.join(c for c in word.strip(WHITE_SPACES) if c.isalnum() or c == '-')
-            for word in val.strip(WHITE_SPACES).split(' ')
-        ]
-        return '-'.join(words)
 
     @classmethod
     def from_dict(cls, metadata: Dict):
@@ -77,6 +71,7 @@ class Question:
         return to_remove
 
     def __str__(self) -> str:
-        return f'Question {self.idx + 1}: {self.title} [⏰ {self.time_limit} sec] [{len(self.test_cases)} Samples]'
+        samples = 'Sample' if len(self.test_cases) == 1 else 'Samples'
+        return f'Question {self.idx}: {self.title} [⏰ {self.time_limit} sec] [{len(self.test_cases)} {samples}]'
 
     __repr__ = __str__

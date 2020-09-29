@@ -3,12 +3,13 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from http.client import HTTPSConnection
-from typing import List, Tuple
+from typing import List
 
 from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
-from cpcli.utils.exceptions import InvalidContestURI
+from cpcli.utils.exceptions import InvalidProblemSetURI
 from cpcli.utils.misc import walk_modules
+from cpcli.utils.uri import PlatformURI
 
 logger = logging.getLogger()
 
@@ -26,51 +27,56 @@ def iter_platforms(cls):
 
 
 class Platform(ABC):
-    def __init__(self, name: str, base_url: str, uri: str, config: CpCliConfig) -> None:
+    def __init__(self, name: str, base_url: str, uri: PlatformURI, config: CpCliConfig) -> None:
         self.name = name
         self.base_url = base_url
         self.config = config
         self.uri = uri
-        self.base_dir = os.path.join(config.contest_files_dir, f'{self.name}-{self.contest}')
-        self.metadata_path = os.path.join(self.base_dir, '.metadata.json')
 
-        if not os.path.exists(self.base_dir):
-            logger.debug(f'Creating base directory: {self.base_dir}')
-            os.makedirs(self.base_dir)
+    @property
+    def base_dir(self) -> str:
+        path = os.path.join(
+            self.config.contest_files_dir,
+            f'{self.name}-{self.uri.problemset}'
+        )
+        if not os.path.exists(path):
+            logger.debug(f'Creating base directory: {path}')
+            os.makedirs(path)
+
+        return path
+
+    @property
+    def metadata_path(self) -> str:
+        return os.path.join(self.base_dir, '.metadata.json')
 
     @classmethod
     def from_uri(cls, uri: str, config: CpCliConfig):
-        idx = uri.find("::")
-        if idx == -1:
-            raise InvalidContestURI(uri)
-        platform = uri[:idx]
-
+        platform_uri = PlatformURI(uri)
         for platform_cls in iter_platforms(cls):
-            if platform_cls.uri_prefix() == platform:
-                return platform_cls(config, uri)
+            if platform_cls.uri_prefix() == platform_uri.platform:
+                return platform_cls(config, platform_uri)
 
-        raise InvalidContestURI(uri)
+        raise InvalidProblemSetURI(uri)
 
     @staticmethod
     @abstractmethod
     def uri_prefix():
-        pass
+        raise NotImplementedError
 
-    @property
-    def contest(self):
-        idx = self.uri.find('::')
-        return self.uri[idx + 2:]
-
-    def download_response(self, request_url: str) -> Tuple[int, str]:
+    def download_response(self, request_url: str, max_retries: int = 3) -> str:
         # Establish a connection
-        conn = HTTPSConnection(self.base_url)
-        conn.request('GET', request_url)
-        response = conn.getresponse()
-        body = response.read().decode()
-        response_code = response.getcode()
-        conn.close()
+        for _ in range(max_retries):
+            conn = HTTPSConnection(self.base_url)
+            conn.request('GET', request_url)
+            response = conn.getresponse()
+            body = response.read().decode()
+            response_code = response.getcode()
+            conn.close()
 
-        return response_code, body
+            if response_code != 200:
+                continue
+
+            return body
 
     @abstractmethod
     def get_questions(self) -> List[Question]:

@@ -6,6 +6,7 @@ from lxml.html import document_fromstring
 from cpcli.platforms import Platform
 from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
+from cpcli.utils.uri import PlatformURI
 
 logger = logging.getLogger()
 
@@ -14,7 +15,7 @@ class CodeForces(Platform):
     BASE_URL = 'codeforces.com'
     NAME = 'Codeforces'
 
-    def __init__(self, config: CpCliConfig, uri: str):
+    def __init__(self, config: CpCliConfig, uri: PlatformURI):
         super().__init__(self.NAME, self.BASE_URL, uri, config)
 
     @staticmethod
@@ -22,13 +23,10 @@ class CodeForces(Platform):
         return 'cf'
 
     def get_questions(self) -> List[Question]:
-        logger.info(f'Downloading page {self.base_url}/contest/{self.contest}/problems')
+        contest = self.uri.problemset
+        logger.info(f'Downloading page {self.base_url}/contest/{contest}/problems')
 
-        response_code, body = self.download_response(f"/contest/{self.contest}/problems")
-        if response_code != 200:
-            err = Exception(f'No contest found for codechef/{self.contest} ❌❌')
-            raise err
-
+        body = self.download_response(f"/contest/{contest}/problems")
         questions: List[Question] = []
 
         doc = document_fromstring(body)
@@ -38,7 +36,7 @@ class CodeForces(Platform):
         logger.info('Scraping problems:')
 
         problems = doc.xpath('//div[@class="problem-statement"]')
-        for idx, problem in enumerate(problems):
+        for idx, problem in enumerate(problems, start=1):
             title = problem.find_class("title")[0].text_content()
             time_limit = problem.find_class("time-limit")[0].text_content()
 

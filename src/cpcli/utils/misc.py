@@ -1,6 +1,8 @@
 from importlib import import_module
 from pkgutil import iter_modules
 
+from cpcli.utils.constants import WHITE_SPACES
+
 
 def walk_modules(path):
     """Loads a module and all its submodules from the given module path and
@@ -21,3 +23,18 @@ def walk_modules(path):
                 sub_module = import_module(full_path)
                 mods.append(sub_module)
     return mods
+
+
+def kebab_case(val: str) -> str:
+    words = [
+        ''.join(c for c in word.strip(WHITE_SPACES) if c.isalnum() or c == '-')
+        for word in val.strip(WHITE_SPACES).split(' ')
+    ]
+    return '-'.join(words)
+
+
+def initials(val: str) -> str:
+    return ''.join([
+        word[0]
+        for word in val.split(' ')
+    ])

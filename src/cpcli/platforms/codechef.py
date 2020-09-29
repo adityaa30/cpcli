@@ -5,6 +5,7 @@ from typing import Dict, Iterator, List, Tuple
 from cpcli.platforms import Platform
 from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
+from cpcli.utils.uri import PlatformURI
 
 logger = logging.getLogger()
 
@@ -13,7 +14,7 @@ class CodeChef(Platform):
     BASE_URL = 'www.codechef.com'
     NAME = 'CodeChef'
 
-    def __init__(self, config: CpCliConfig, uri: str):
+    def __init__(self, config: CpCliConfig, uri: PlatformURI):
         super().__init__(self.NAME, self.BASE_URL, uri, config)
 
     @staticmethod
@@ -58,12 +59,10 @@ class CodeChef(Platform):
         return question
 
     def get_questions(self) -> List[Question]:
-        logger.info(f'Downloading page {self.BASE_URL}/{self.contest}')
+        contest = self.uri.problemset
+        logger.info(f'Downloading page {self.BASE_URL}/{contest}')
 
-        response_code, body = self.download_response(f'/api/contests/{self.contest}')
-        if response_code != 200:
-            err = Exception(f'No contest found for codechef/{self.contest} ❌❌')
-            raise err
+        body = self.download_response(f'/api/contests/{contest}')
 
         data = json.loads(body)
         questions: List[Question] = []
@@ -72,27 +71,21 @@ class CodeChef(Platform):
         logger.info(f'Found: {caption} ✅')
         logger.info('Scraping problems:')
 
-        idx = 0
-        max_retries = 3
-
+        idx = 1
         for name in problems:
-            for _ in range(max_retries):
-                problems_data = data.get('problems_data', None)
-                problem = problems_data.get(name, None) if problems_data else None
+            problems_data = data.get('problems_data', None)
+            problem = problems_data.get(name, None) if problems_data else None
 
-                if problem is None or problem['status'] != 'success':
-                    problem_response_code, problem_body = self.download_response(
-                        f'/api/contests/{self.contest}/problems/{name}'
-                    )
-                    if problem_response_code != 200:
-                        break
-                    problem = json.loads(problem_body)
+            retries_left = 3
+            while (problem is None or problem['status'] != 'success') and retries_left > 0:
+                problem_body = self.download_response(f'/api/contests/{contest}/problems/{name}')
+                problem = json.loads(problem_body)
+                retries_left -= 1
 
-                if problem['status'] == 'success':
-                    question = self.parse_question(idx, problem)
-                    questions.append(question)
-                    logger.info(question)
-                    idx += 1
-                    break
+            if problem is not None and problem['status'] == 'success':
+                question = self.parse_question(idx, problem)
+                questions.append(question)
+                logger.info(question)
+                idx += 1
 
         return questions

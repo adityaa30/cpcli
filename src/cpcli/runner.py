@@ -8,6 +8,7 @@ from typing import Optional, List, Dict
 from cpcli.platforms import Platform
 from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
+from cpcli.utils.exceptions import InvalidProblemSetURI
 
 logger = logging.getLogger()
 
@@ -26,7 +27,7 @@ class Runner:
     def to_dict(self) -> Dict:
         metadata: Dict = {
             'platform': self.platform.name,
-            'contest': self.platform.contest,
+            'problemset': self.platform.uri.problemset,
             'base_dir': self.base_dir,
             'template': self.template,
             'questions': []
@@ -98,7 +99,11 @@ class Runner:
 
     def load_questions(self, force_download=False) -> None:
         if force_download or (not os.path.exists(self.platform.metadata_path)):
-            self.questions = self.platform.get_questions()
+            try:
+                self.questions = self.platform.get_questions()
+            except InvalidProblemSetURI as e:
+                logger.error(e)
+
             self.save_questions()
             return
 

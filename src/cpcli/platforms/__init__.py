@@ -78,6 +78,8 @@ class Platform(ABC):
 
             return body
 
+        return ''
+
     @abstractmethod
     def get_questions(self) -> List[Question]:
         pass

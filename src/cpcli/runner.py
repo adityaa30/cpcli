@@ -101,8 +101,8 @@ class Runner:
         if force_download or (not os.path.exists(self.platform.metadata_path)):
             try:
                 self.questions = self.platform.get_questions()
-            except InvalidProblemSetURI as e:
-                logger.error(e)
+            except InvalidProblemSetURI as err:
+                logger.error(err)
 
             self.save_questions()
             return

@@ -8,6 +8,7 @@ from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
 from cpcli.utils.exceptions import InvalidProblemSetURI
 from cpcli.utils.misc import initials
+from cpcli.utils.uri import PlatformURI
 
 logger = logging.getLogger()
 
@@ -40,11 +41,11 @@ class CSESProblemSet(Platform):
     BASE_URL = 'cses.fi'
     NAME = 'CSESProblemSet'
 
-    def __init__(self, config: CpCliConfig, uri: str):
+    def __init__(self, config: CpCliConfig, uri: PlatformURI):
         super().__init__(self.NAME, self.BASE_URL, uri, config)
         self.categories: List[CSESCategory] = []
 
-        page_html = self.download_response(f"/problemset/")
+        page_html = self.download_response("/problemset/")
         doc = document_fromstring(page_html)
 
         # [1:] -> Skip the `General` heading
@@ -93,6 +94,7 @@ class CSESProblemSet(Platform):
             if initial == self.uri.problem:
                 return problem
 
+        assert self.uri.problem is not None
         for idx, problem in enumerate(category.problems, start=1):
             if (
                     str(idx) == self.uri.problem
@@ -109,19 +111,19 @@ class CSESProblemSet(Platform):
             extra += f'{category}\n'
 
         extra += (
-            f'\nYou can put:\n'
-            f'1. Set Number\n'
-            f'2. Substring of the respective problem set.\n'
-            f'3. Initials of the respective problem set.\n'
-            f'Eg: "Introductory Problems" could be matched using '
-            f'"cses::1" or "cses::intro" or "cses::ip" \n'
+            '\nYou can put:\n'
+            '1. Set Number\n'
+            '2. Substring of the respective problem set.\n'
+            '3. Initials of the respective problem set.\n'
+            'Eg: "Introductory Problems" could be matched using '
+            '"cses::1" or "cses::intro" or "cses::ip" \n'
         )
 
         extra += (
-            f'\nOptionally you can specify a problem too with the same format as above\n'
-            f'Eg: "Weird Algorithms" problem in "Introductory Problems" could be matched  using '
-            f'"cses::1::1" or "cses::1::weird" or "cses::1::wa"\n'
-            f'Problems having same initials could lead to unexpected results.\n'
+            '\nOptionally you can specify a problem too with the same format as above\n'
+            'Eg: "Weird Algorithms" problem in "Introductory Problems" could be matched  using '
+            '"cses::1::1" or "cses::1::weird" or "cses::1::wa"\n'
+            'Problems having same initials could lead to unexpected results.\n'
         )
 
         return extra
@@ -133,12 +135,12 @@ class CSESProblemSet(Platform):
             extra += f'{problem}\n'
 
         extra += (
-            f'\nYou can put:\n'
-            f'1. Problem Number\n'
-            f'2. Substring of the respective problem name.\n'
-            f'3. Initials of the respective problem set.\n'
-            f'Eg: "Weird Algorithms" problem in "Introductory Problems" could be matched  using '
-            f'"cses::1::1" or "cses::1::weird" or "cses::1::wa" \n'
+            '\nYou can put:\n'
+            '1. Problem Number\n'
+            '2. Substring of the respective problem name.\n'
+            '3. Initials of the respective problem set.\n'
+            'Eg: "Weird Algorithms" problem in "Introductory Problems" could be matched  using '
+            '"cses::1::1" or "cses::1::weird" or "cses::1::wa" \n'
         )
 
         return extra
@@ -169,10 +171,10 @@ class CSESProblemSet(Platform):
             sample_input = document_fromstring(input_html).xpath('//code/text()')
             sample_output = document_fromstring(output_html).xpath('//code/text()')
 
-            if type(sample_input) == list:
+            if isinstance(sample_input, List):
                 sample_input = '\n'.join(sample_input)
 
-            if type(sample_output) == list:
+            if isinstance(sample_output, List):
                 sample_output = '\n'.join(sample_output)
 
             question.add_test(sample_input, sample_output)
@@ -193,10 +195,11 @@ class CSESProblemSet(Platform):
             problem = self.get_problem(category)
             if problem is None:
                 raise InvalidProblemSetURI(str(self.uri), self.extra_description_problem(category))
-            else:
-                logger.info(f'Downloading problem "{problem.name}" from {category.name}')
-                question = self.download_question(1, problem)
-                questions.append(question)
+
+            logger.info(f'Downloading problem "{problem.name}" from {category.name}')
+            question = self.download_question(1, problem)
+            questions.append(question)
+
         else:
             logger.info(f'Downloading {len(category.problems)} problems from "{category.name}"')
             for idx, problem in enumerate(category.problems, start=1):

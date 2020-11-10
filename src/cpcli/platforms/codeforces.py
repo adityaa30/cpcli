@@ -7,6 +7,7 @@ from cpcli.platforms import Platform
 from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
 from cpcli.utils.uri import PlatformURI
+from cpcli.utils.exceptions import InvalidProblemSetURI
 
 logger = logging.getLogger()
 
@@ -22,11 +23,18 @@ class CodeForces(Platform):
     def uri_prefix():
         return 'cf'
 
+    def extra_message(self) -> str:
+        extra = 'Contest does not exist \n'
+        return extra
+
     def get_questions(self) -> List[Question]:
         contest = self.uri.problemset
         logger.info(f'Downloading page {self.base_url}/contest/{contest}/problems')
 
         body = self.download_response(f"/contest/{contest}/problems")
+        if body is ' ':
+            raise InvalidProblemSetURI(str(self.uri), self.extra_message())
+
         questions: List[Question] = []
 
         doc = document_fromstring(body)

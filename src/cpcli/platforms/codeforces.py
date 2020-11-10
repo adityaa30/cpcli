@@ -1,12 +1,13 @@
 import logging
 from typing import List
-
+import lxml
 from lxml.html import document_fromstring
 
 from cpcli.platforms import Platform
 from cpcli.question import Question
 from cpcli.utils.config import CpCliConfig
 from cpcli.utils.uri import PlatformURI
+from cpcli.utils.exceptions import InvalidProblemSetURI
 
 logger = logging.getLogger()
 
@@ -22,6 +23,10 @@ class CodeForces(Platform):
     def uri_prefix():
         return 'cf'
 
+    def extra_message(self) -> str:
+        extra = ', Contest does not exist \n'
+        return extra
+
     def get_questions(self) -> List[Question]:
         contest = self.uri.problemset
         logger.info(f'Downloading page {self.base_url}/contest/{contest}/problems')
@@ -29,7 +34,14 @@ class CodeForces(Platform):
         body = self.download_response(f"/contest/{contest}/problems")
         questions: List[Question] = []
 
-        doc = document_fromstring(body)
+        try:
+            doc = document_fromstring(body)
+
+        except lxml.etree.ParserError as e:
+            if str(e) == "Document is empty":
+                raise InvalidProblemSetURI(str(self.uri), self.extra_message())
+
+            raise
         caption = doc.xpath('//div[@class="caption"]/text()')[0]
 
         logger.info(f'Found: {caption} ✅')

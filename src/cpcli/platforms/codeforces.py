@@ -34,7 +34,6 @@ class CodeForces(Platform):
         body = self.download_response(f"/contest/{contest}/problems")
         questions: List[Question] = []
 
-        
         try:
             doc = document_fromstring(body)
 
@@ -43,7 +42,6 @@ class CodeForces(Platform):
                 raise InvalidProblemSetURI(str(self.uri), self.extra_message())
 
             raise
-            
         caption = doc.xpath('//div[@class="caption"]/text()')[0]
 
         logger.info(f'Found: {caption} ✅')

@@ -24,7 +24,7 @@ class CodeForces(Platform):
         return 'cf'
 
     def extra_message(self) -> str:
-        extra = 'Contest does not exist \n'
+        extra = ', Contest does not exist \n'
         return extra
 
     def get_questions(self) -> List[Question]:
@@ -32,12 +32,18 @@ class CodeForces(Platform):
         logger.info(f'Downloading page {self.base_url}/contest/{contest}/problems')
 
         body = self.download_response(f"/contest/{contest}/problems")
-        if body == ' ':
-            raise InvalidProblemSetURI(str(self.uri), self.extra_message())
-
         questions: List[Question] = []
 
-        doc = document_fromstring(body)
+        
+        try:
+            doc = document_fromstring(body)
+
+        except lxml.etree.ParserError as e:
+            if str(e) == "Document is empty":
+                raise InvalidProblemSetURI(str(self.uri), self.extra_message())
+
+            raise
+            
         caption = doc.xpath('//div[@class="caption"]/text()')[0]
 
         logger.info(f'Found: {caption} ✅')

@@ -1,7 +1,6 @@
 import logging
-import lxml
 from typing import List
-
+import lxml
 from lxml.html import document_fromstring
 
 from cpcli.platforms import Platform

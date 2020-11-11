@@ -1,4 +1,5 @@
 import logging
+import lxml
 from typing import List
 
 from lxml.html import document_fromstring

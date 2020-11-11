@@ -32,7 +32,7 @@ class CodeForces(Platform):
         logger.info(f'Downloading page {self.base_url}/contest/{contest}/problems')
 
         body = self.download_response(f"/contest/{contest}/problems")
-        if body is ' ':
+        if body == ' ':
             raise InvalidProblemSetURI(str(self.uri), self.extra_message())
 
         questions: List[Question] = []

@@ -7,7 +7,7 @@ install_requires = [
 
 setup(
     name='cpcli',
-    version='0.2',
+    version='0.3',
     description='Competitive Programming CLI',
     author='Aditya Kumar',
     author_email='k.aditya00@gmail.com',

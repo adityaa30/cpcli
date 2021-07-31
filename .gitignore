@@ -16,9 +16,11 @@ venv
 # Distribution packaging
 *.egg
 *.egg-info/
+dist
 
 # Misc
 */program
 program
 *.txt
 ContestFiles
+

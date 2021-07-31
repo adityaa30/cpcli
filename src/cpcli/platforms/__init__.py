@@ -37,7 +37,8 @@ class Platform(ABC):
     def base_dir(self) -> str:
         path = os.path.join(
             self.config.contest_files_dir,
-            f'{self.name}-{self.uri.problemset}'
+            self.name,
+            self.uri.problemset
         )
         if not os.path.exists(path):
             logger.debug(f'Creating base directory: {path}')

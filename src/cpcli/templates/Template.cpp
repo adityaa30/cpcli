@@ -1,6 +1,5 @@
 // https://github.com/adityaa30/cpcli/blob/master/src/cpcli/templates/Template.cpp
 #include <bits/stdc++.h>
-#define var(x) #x, x
 #define int long long int
 using namespace std;
 

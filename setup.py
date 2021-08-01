@@ -7,7 +7,7 @@ install_requires = [
 
 setup(
     name='cpcli',
-    version='0.7',
+    version='0.8',
     description='Competitive Programming CLI',
     author='Aditya Kumar',
     author_email='k.aditya00@gmail.com',
@@ -19,7 +19,7 @@ setup(
     install_requires=install_requires,
     include_package_data=True,
     url='https://github.com/adityaa30/cpcli',
-    download_url='https://github.com/adityaa30/cpcli/releases/tag/0.7',
+    download_url='https://github.com/adityaa30/cpcli/releases/tag/0.8',
     keywords=['CLI', 'Competitive Programming'],
     zip_safe=False,
     license='MIT License',

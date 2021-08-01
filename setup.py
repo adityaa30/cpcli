@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 install_requires = [
     'lxml>=4.5.0',
@@ -7,17 +7,19 @@ install_requires = [
 
 setup(
     name='cpcli',
-    version='0.4',
+    version='0.5',
     description='Competitive Programming CLI',
     author='Aditya Kumar',
     author_email='k.aditya00@gmail.com',
     long_description=open('README.rst', 'r', encoding='utf-8').read(),
     package_dir={'': 'src'},
-    entry_points={'console_scripts': ['cpcli=cpcli.cmdline:execute']},
+    packages=['cpcli'],
+    entry_points={'console_scripts': ['cpcli = cpcli.cmdline:execute']},
     python_requires='>=3.6',
     install_requires=install_requires,
+    include_package_data=True,
     url='https://github.com/adityaa30/cpcli',
-    download_url='https://github.com/adityaa30/cpcli/releases/tag/0.2',
+    download_url='https://github.com/adityaa30/cpcli/releases/tag/0.5',
     keywords=['CLI', 'Competitive Programming'],
     zip_safe=False,
     license='MIT License',

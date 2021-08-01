@@ -27,9 +27,10 @@ def walk_modules(path):
 
 def kebab_case(val: str) -> str:
     words = [
-        ''.join(c for c in word.strip(WHITE_SPACES) if c.isalnum() or c == '-')
+        ''.join(c for c in word.strip(WHITE_SPACES) if c.isalnum())
         for word in val.strip(WHITE_SPACES).split(' ')
     ]
+    words = [word for word in words if word]
     return '-'.join(words)
 
 
